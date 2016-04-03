@@ -13,7 +13,7 @@ Collision BoxCircleCollider::collide(EntityW::EntitySp entity1, EntityW::EntityS
 	auto collisionShape2 = (CircleCollisionShape*)collision2->shape;
 
 	Vector2 circleCenter = transform2->position + collisionShape2->center();
-	Vector2* vertices = calculateVertices(entity1);
+	std::vector<Vector2> vertices = calculateVertices(entity1);
 	Vector2 axis;
 	float minDistance = 10000000000;
 	for (int i = 0; i < 4; i++)
@@ -82,13 +82,13 @@ Collision BoxBoxCollider::collide(EntityW::EntitySp entity1, EntityW::EntitySp e
 	return collision;
 }
 
-Vector2* Collider::calculateVertices(EntityW::EntitySp entity)
+std::vector<Vector2> Collider::calculateVertices(EntityW::EntitySp entity)
 {
 	auto transform = entity->get<TransformComponent>();
 	auto collision = entity->get<CollisionComponent>();
 	auto collisionShape = (RectCollisionShape*)collision->shape;
 
-	Vector2 vertices[4] = { Vector2(transform->position.x, transform->position.y),
+	std::vector<Vector2> vertices = { Vector2(transform->position.x, transform->position.y),
 		Vector2(transform->position.x + collisionShape->width, transform->position.y),
 		Vector2(transform->position.x + collisionShape->width, transform->position.y + collisionShape->height),
 		Vector2(transform->position.x, transform->position.y + collisionShape->height) };
@@ -101,9 +101,17 @@ Vector2* Collider::calculateVertices(EntityW::EntitySp entity)
 
 Projection Collider::project(EntityW::EntitySp entity, Vector2 axis)
 {
-	Vector2* vertices = calculateVertices(entity);
-	logger.log(std::to_string(vertices[0].x));
-	//logger.log(std::to_string(vertices[0].x) + " " + std::to_string(vertices[0].y));// +" " + std::to_string(axis.x) + " " + std::to_string(axis.y));
+	/*auto transform = entity->get<TransformComponent>();
+	auto collision = entity->get<CollisionComponent>();
+	auto collisionShape = (RectCollisionShape*)collision->shape;
+
+	Vector2 vertices[4] = { Vector2(transform->position.x, transform->position.y),
+		Vector2(transform->position.x + collisionShape->width, transform->position.y),
+		Vector2(transform->position.x + collisionShape->width, transform->position.y + collisionShape->height),
+		Vector2(transform->position.x, transform->position.y + collisionShape->height) };*/
+
+	std::vector<Vector2> vertices = calculateVertices(entity);
+
 	float max = glm::dot(axis, vertices[0]);
 	
 

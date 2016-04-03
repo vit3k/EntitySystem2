@@ -4,6 +4,7 @@
 #include "Logger.h"
 #include "Vector2.h"
 #include <cmath>
+#include <vector>
 
 struct Projection {
 	float min, max;
@@ -28,7 +29,7 @@ class Collider
 	Logger logger = Logger::get("Collider");
 protected:
 	Projection project(EntityW::EntitySp entity, Vector2 axis);
-	Vector2* calculateVertices(EntityW::EntitySp entity);
+	std::vector<Vector2> calculateVertices(EntityW::EntitySp entity);
 public:
 	virtual Collision collide(EntityW::EntitySp entity1, EntityW::EntitySp entity2) = 0;
 };
