@@ -6,14 +6,6 @@
 #include <cmath>
 #include <vector>
 
-struct Projection {
-	float min, max;
-	Projection(float min, float max) : min(min), max(max) {}
-	float overlaps(Projection& other) {
-		return fmax(0, fmin(max, other.max) - fmax(min, other.min));
-	}
-};
-
 class Collision {
 	
 public:
@@ -28,8 +20,7 @@ class Collider
 {
 	Logger logger = Logger::get("Collider");
 protected:
-	Projection project(EntityW::EntitySp entity, Vector2 axis);
-	std::vector<Vector2> calculateVertices(EntityW::EntitySp entity);
+	Collision sat(EntityW::EntitySp entity1, EntityW::EntitySp entity2, std::vector<Vector2> axes);
 public:
 	virtual Collision collide(EntityW::EntitySp entity1, EntityW::EntitySp entity2) = 0;
 };
@@ -41,6 +32,7 @@ public:
 };
 
 class BoxCircleCollider : public Collider {
+	Logger logger = Logger::get("BoxCircleCollider");
 public:
 	virtual Collision collide(EntityW::EntitySp entity1, EntityW::EntitySp entity2);
 };

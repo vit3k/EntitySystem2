@@ -2,37 +2,7 @@
 #include "Components.h"
 #include <cmath>
 
-Collision BoxCircleCollider::collide(EntityW::EntitySp entity1, EntityW::EntitySp entity2)
-{
-	auto transform1 = entity1->get<TransformComponent>();
-	auto transform2 = entity2->get<TransformComponent>();
-	auto collision1 = entity1->get<CollisionComponent>();
-	auto collision2 = entity2->get<CollisionComponent>();
-
-	auto collisionShape1 = (RectCollisionShape*) collision1->shape;
-	auto collisionShape2 = (CircleCollisionShape*)collision2->shape;
-
-	Vector2 circleCenter = transform2->position + collisionShape2->center();
-	std::vector<Vector2> vertices = calculateVertices(entity1);
-	Vector2 axis;
-	float minDistance = 10000000000;
-	for (int i = 0; i < 4; i++)
-	{
-		Vector2 vertex = vertices[i];
-		Vector2 distanceVector = circleCenter - vertex;
-		float distance = fabs(glm::length(distanceVector));
-		if (distance < minDistance)
-		{
-			minDistance = distance;
-			axis = distanceVector;
-		}
-	}
-
-	return Collision();
-}
-
-Collision BoxBoxCollider::collide(EntityW::EntitySp entity1, EntityW::EntitySp entity2)
-{
+Collision Collider::sat(EntityW::EntitySp entity1, EntityW::EntitySp entity2, std::vector<Vector2> axes) {
 	auto transform1 = entity1->get<TransformComponent>();
 	auto transform2 = entity2->get<TransformComponent>();
 	auto collision1 = entity1->get<CollisionComponent>();
@@ -44,16 +14,13 @@ Collision BoxBoxCollider::collide(EntityW::EntitySp entity1, EntityW::EntitySp e
 	Collision collision;
 	collision.occured = true;
 
-	Vector2 axes[2] = { Vector2(1., 0.), Vector2(0., 1.)};
 	Vector2 smallest;
 	float minOverlap = 10000000;
 	for (auto axis : axes) {
-		Projection projection1 = project(entity1, axis);
-		Projection projection2 = project(entity2, axis);
-		//logger.log(std::to_string(projection1.min)+" "+std::to_string( projection1.max)+" "+std::to_string(projection2.min)+" "+std::to_string(projection2.max));
+		Projection projection1 = collisionShape1->project(transform1, axis);
+		Projection projection2 = collisionShape2->project(transform2, axis);
 		float overlap = projection1.overlaps(projection2);
-		//logger.log(std::to_string(overlap));
-		if ( overlap == 0)
+		if (overlap == 0)
 		{
 			collision.occured = false;
 			break;
@@ -81,54 +48,37 @@ Collision BoxBoxCollider::collide(EntityW::EntitySp entity1, EntityW::EntitySp e
 	}
 	return collision;
 }
-
-std::vector<Vector2> Collider::calculateVertices(EntityW::EntitySp entity)
+Collision BoxCircleCollider::collide(EntityW::EntitySp entity1, EntityW::EntitySp entity2)
 {
-	auto transform = entity->get<TransformComponent>();
-	auto collision = entity->get<CollisionComponent>();
-	auto collisionShape = (RectCollisionShape*)collision->shape;
+	auto transform1 = entity1->get<TransformComponent>();
+	auto transform2 = entity2->get<TransformComponent>();
+	auto collision1 = entity1->get<CollisionComponent>();
+	auto collision2 = entity2->get<CollisionComponent>();
 
-	std::vector<Vector2> vertices = { Vector2(transform->position.x, transform->position.y),
-		Vector2(transform->position.x + collisionShape->width, transform->position.y),
-		Vector2(transform->position.x + collisionShape->width, transform->position.y + collisionShape->height),
-		Vector2(transform->position.x, transform->position.y + collisionShape->height) };
-	//for (int i = 0; i < 4; i++) {
-	logger.log(std::to_string(vertices[0].x) + " " + std::to_string(vertices[0].y));
-	//}
-	
-	return vertices;
-}
+	auto collisionShape1 = (RectCollisionShape*) collision1->shape;
+	auto collisionShape2 = (CircleCollisionShape*)collision2->shape;
 
-Projection Collider::project(EntityW::EntitySp entity, Vector2 axis)
-{
-	/*auto transform = entity->get<TransformComponent>();
-	auto collision = entity->get<CollisionComponent>();
-	auto collisionShape = (RectCollisionShape*)collision->shape;
-
-	Vector2 vertices[4] = { Vector2(transform->position.x, transform->position.y),
-		Vector2(transform->position.x + collisionShape->width, transform->position.y),
-		Vector2(transform->position.x + collisionShape->width, transform->position.y + collisionShape->height),
-		Vector2(transform->position.x, transform->position.y + collisionShape->height) };*/
-
-	std::vector<Vector2> vertices = calculateVertices(entity);
-
-	float max = glm::dot(axis, vertices[0]);
-	
-
-	float min = max;
-	
-	for (int i = 1; i < 4; i++)
+	Vector2 circleCenter = transform2->position + collisionShape2->center();
+	std::vector<Vector2> vertices = collisionShape1->calculateVertices(transform1);
+	Vector2 axis;
+	float minDistance = 10000000000;
+	for (int i = 0; i < 4; i++)
 	{
-		float p = glm::dot(axis, vertices[i]);
-		if (p < min)
+		Vector2 vertex = vertices[i];
+		Vector2 distanceVector = circleCenter - vertex;
+		float distance = fabs(glm::length(distanceVector));
+		if (distance < minDistance)
 		{
-			min = p;
-		}
-		else if (p > max)
-		{
-			max = p;
+			minDistance = distance;
+			axis = distanceVector;
 		}
 	}
+	axis = glm::normalize(axis);
 	
-	return Projection(min, max);
+	return sat(entity1, entity2, { Vector2(1., 0.), Vector2(0., 1.), axis });
+}
+
+Collision BoxBoxCollider::collide(EntityW::EntitySp entity1, EntityW::EntitySp entity2)
+{
+	return sat(entity1, entity2, { Vector2(1., 0.), Vector2(0., 1.) });
 }

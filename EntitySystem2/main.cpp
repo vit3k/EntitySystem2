@@ -14,21 +14,29 @@
 #include "CollisionSystem.h"
 #include "PhysicsSystem.h"
 
-//using namespace sel;
+using namespace sel;
 
 class TestClass {
 public:
 	virtual int test() { return 1; }
 };
+/*RenderComponent test(){
+	State state;
+	state["Vector2"].SetClass<Vector2, double, double>("x", &Vector2::x, "y", &Vector2::y);
+	state["TransformComponent"].SetClass<TransformComponent, Vector2>();
+	state["InputComponent"].SetClass<InputComponent, int>();
+	state["VelocityComponent"].SetClass<VelocityComponent, Vector2, float>();
+	state["Shape"].SetClass<sf::Shape>();
+	//state["RectangleShape"].SetClass<sf::RectangleShape, Vector2>();
+	state["RenderComponent"].SetClass<RenderComponent, sf::Shape>();
+	state.Load("test.lua");
+	auto entity = state["entity"];
+	RenderComponent test = entity["render"];
+	return test;
+}*/
 int main()
 {
-	/*State state;
-	state["TransformComponent"].SetClass<TransformComponent, int, int>("x", &TransformComponent::x, "y", &TransformComponent::y);
-	state["TestClass"].SetClass<TestClass>("test", &TestClass::test);
-
-	//state["System"].SetClass<BaseSystem, Compo
-	state.Load("test.lua");
-	int test3 = state["test2"]["update"]();*/
+	//RenderComponent test2 = test();
 	sf::RenderWindow window(sf::VideoMode(800, 600), "Pong");
 	std::shared_ptr<RenderSystem> renderSystem(new RenderSystem(&window));
 	EntityW::World world;
@@ -57,7 +65,7 @@ int main()
 	paddle1->attach<InputComponent>(0);
 	paddle1->attach<VelocityComponent>(Vector2(0, 0), 0);
 	paddle1->attach<CollisionComponent>(&RectCollisionShape(.5, 2.));
-	paddle1->attach<PhysicsComponent>(0., 1.);
+	paddle1->attach<PhysicsComponent>(0., 1., Vector2(0, 1));
 	
 	EntityW::EntitySp paddle2 = world.createEntity();
 	paddle2->attach<TransformComponent>(Vector2(9.5, -1.));
@@ -65,26 +73,26 @@ int main()
 	paddle2Shape.setFillColor(sf::Color::Red);
 	paddle2->attach<RenderComponent>(&paddle2Shape);
 	paddle2->attach<InputComponent>(1);
-	//paddle2->attach<VelocityComponent>(Vector2(0, 0), 0);
-	//paddle2->attach<CollisionComponent>(&RectCollisionShape(.5, 2.));
-	//paddle2->attach<PhysicsComponent>(0., 1.);
+	paddle2->attach<VelocityComponent>(Vector2(0, 0), 0);
+	paddle2->attach<CollisionComponent>(&RectCollisionShape(.5, 2.));
+	paddle2->attach<PhysicsComponent>(0., 1., Vector2(0, 1));
 
 	EntityW::EntitySp ball = world.createEntity();
-	ball->attach<TransformComponent>(Vector2(-0.15, -0.15));
+	ball->attach<TransformComponent>(Vector2(-0.15, -5));
 	sf::CircleShape ballShape(0.3);
 	ballShape.setFillColor(sf::Color::White);
 	ball->attach<RenderComponent>(&ballShape);
-	//ball->attach<VelocityComponent>(Vector2(-5., 0), 1);
-	//ball->attach<CollisionComponent>(&CircleCollisionShape(.3));
-	//ball->attach<PhysicsComponent>(1., .3);
+	ball->attach<VelocityComponent>(Vector2(-5., 3.), 1);
+	ball->attach<CollisionComponent>(&CircleCollisionShape(.3));
+	ball->attach<PhysicsComponent>(1., .1, Vector2(1, 1));
 
 	EntityW::EntitySp topBorder = world.createEntity();
 	topBorder->attach<TransformComponent>(Vector2(-10.0, -8.5));
 	topBorder->attach<CollisionComponent>(&RectCollisionShape(20.0, 1));
 	
-	//EntityW::EntitySp bottomBorder = world.createEntity();
-	//bottomBorder->attach<TransformComponent>(Vector2(-10.0, 7.5));
-	//bottomBorder->attach<CollisionComponent>(&RectCollisionShape(20.0, 1));
+	EntityW::EntitySp bottomBorder = world.createEntity();
+	bottomBorder->attach<TransformComponent>(Vector2(-10.0, 7.5));
+	bottomBorder->attach<CollisionComponent>(&RectCollisionShape(20.0, 1));
 	
 	world.refresh();
 	
@@ -129,4 +137,5 @@ int main()
 	
 	return 0;
 }
+
 

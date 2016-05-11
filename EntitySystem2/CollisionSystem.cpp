@@ -4,7 +4,7 @@
 
 CollisionSystem::CollisionSystem() {
 	colliders[ColliderType(Rect, Rect)] = new BoxBoxCollider();
-	//colliders[ColliderType(Rect, Circle)] = new BoxCircleCollider();
+	colliders[ColliderType(Rect, Circle)] = new BoxCircleCollider();
 }
 
 CollisionSystem::~CollisionSystem() {
@@ -37,7 +37,13 @@ void CollisionSystem::Process(EntityW::Time delta)
 			else 
 			{
 				collider = colliders[std::pair<CollisionShapeType, CollisionShapeType>(collisionComponent2->shape->getType(), collisionComponent1->shape->getType())];
-				collision = collider->collide(entity2, entity1);
+
+				if (collider != NULL) {
+					collision = collider->collide(entity2, entity1);
+				}
+				else {
+					logger.log("No matching collider");
+				}
 			}
 			
 			if (collision.occured)
