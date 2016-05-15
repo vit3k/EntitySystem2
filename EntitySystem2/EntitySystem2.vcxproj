@@ -173,6 +173,7 @@
     <ClInclude Include="EntityW\ClassTypeId.h" />
     <ClInclude Include="EntityW\Component.h" />
     <ClInclude Include="EntityW\Entity.h" />
+    <ClInclude Include="GameState.h" />
     <ClInclude Include="PhysicsSystem.h" />
     <ClInclude Include="Vector2.h" />
     <ClInclude Include="Logger.h" />

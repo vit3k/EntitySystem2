@@ -82,7 +82,7 @@ int main()
 	sf::CircleShape ballShape(0.3);
 	ballShape.setFillColor(sf::Color::White);
 	ball->attach<RenderComponent>(&ballShape);
-	ball->attach<VelocityComponent>(Vector2(-5., 3.), 1);
+	ball->attach<VelocityComponent>(Vector2(-8., 4.), 1);
 	ball->attach<CollisionComponent>(&CircleCollisionShape(.3));
 	ball->attach<PhysicsComponent>(1., .1, Vector2(1, 1));
 

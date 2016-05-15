@@ -23,9 +23,8 @@ void PhysicsSystem::Process(EntityW::Time deltaTime)
 		correctEntity(entity1, collisionEvent->collision, entity1PropVector);
 		correctEntity(entity2, collisionEvent->collision, entity2PropVector);
 
-		bounceEntity(entity1, collisionEvent->collision, entity1PropVector);
-		bounceEntity(entity2, collisionEvent->collision, entity2PropVector);
-
+		bounceEntity(entity1, collisionEvent->collision, entity1PropVector, getVelocity(entity2));
+		bounceEntity(entity2, collisionEvent->collision, entity2PropVector, getVelocity(entity1));
 	}
 	collisions.clear();
 }
@@ -48,7 +47,6 @@ Vector2 PhysicsSystem::calculatePropVector(EntityW::EntitySp entity, EntityW::En
 	else {
 		prop.y = massProp * constraints.y;
 	}
-	//logger.log(Vector2Utils::toString(constraints) + " " + Vector2Utils::toString(otherConstraints) + " " + Vector2Utils::toString(prop));
 	return prop;
 }
 
@@ -59,6 +57,7 @@ Vector2 PhysicsSystem::getConstraints(EntityW::EntitySp entity) {
 	}
 	return Vector2(0,0);
 }
+
 float PhysicsSystem::getMass(EntityW::EntitySp entity)
 {
 	if (entity->has<PhysicsComponent>())
@@ -68,29 +67,43 @@ float PhysicsSystem::getMass(EntityW::EntitySp entity)
 	return 0.;
 }
 
-void PhysicsSystem::bounceEntity(EntitySp entity, Collision& collision, Vector2 prop)
+Vector2 PhysicsSystem::getVelocity(EntityW::EntitySp entity) {
+	if (entity->has<VelocityComponent>())
+	{
+		return entity->get<VelocityComponent>()->velocity;
+	}
+	return Vector2(0, 0);
+}
+
+void PhysicsSystem::bounceEntity(EntitySp entity, Collision& collision, Vector2 prop, Vector2 otherVelocity)
 {
 	if (entity->has<VelocityComponent>() && entity->has<PhysicsComponent>())
 	{
 		auto physics = entity->get<PhysicsComponent>();
 		auto velocity = entity->get<VelocityComponent>();
 		
-		velocity->velocity = velocity->velocity - 2 * glm::dot(velocity->velocity, collision.normal) * collision.normal;
-
-		logger.log("B "+Vector2Utils::toString(collision.normal) + " " + Vector2Utils::toString(velocity->velocity));
+		auto reflected = glm::reflect(velocity->velocity, collision.normal);
+		velocity->velocity.x = physics->constraints.x ? reflected.x : velocity->velocity.x;
+		velocity->velocity.y = physics->constraints.y ? reflected.y : velocity->velocity.y;
+		auto energyVector = Vector2(prop.x * otherVelocity.x, prop.y * otherVelocity.y);
+		
+		float velocityLength = glm::length(velocity->velocity);
+		velocity->velocity -= energyVector;
+		velocity->velocity.y = glm::clamp(velocity->velocity.y, (float)-6., (float)6.);
+		velocity->velocity = glm::normalize(velocity->velocity) * velocityLength;
+		
+		logger.log("B "+std::to_string(entity->id)+" "+Vector2Utils::toString(velocity->velocity)+" "+Vector2Utils::toString(energyVector));
 	}
 }
 
 void PhysicsSystem::correctEntity(EntityW::EntitySp entity, Collision& collision, Vector2 prop)
-{
-	
+{	
 	auto transform = entity->get<TransformComponent>();
 	auto correction = collision.normal * collision.depth;
 	correction.x *= prop.x;
 	correction.y *= prop.y;
-	logger.log("C "+Vector2Utils::toString(prop)+ " "+Vector2Utils::toString(correction));
-	transform->position += correction;
-	
+	//logger.log("C "+Vector2Utils::toString(prop)+ " "+Vector2Utils::toString(correction));
+	transform->position += correction;	
 }
 
 PhysicsSystem::PhysicsSystem() 
