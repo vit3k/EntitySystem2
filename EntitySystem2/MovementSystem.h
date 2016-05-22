@@ -7,7 +7,8 @@
 
 class MovementSystem : public EntityW::System<TransformComponent, VelocityComponent>
 {
-	Logger logger = Logger::get("MS");
+protected:
+	virtual std::string getName() { return "MovementSystem"; }
 public:
 	virtual void ProcessEntity(EntityW::EntitySp entity, EntityW::Time deltaTime);
 };

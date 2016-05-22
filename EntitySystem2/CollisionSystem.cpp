@@ -1,6 +1,6 @@
 #include "CollisionSystem.h"
 #include "Collider.h"
-#include "EventDispatcher.h"
+#include "EntityW\EventDispatcher.h"
 
 CollisionSystem::CollisionSystem() {
 	colliders[ColliderType(Rect, Rect)] = new BoxBoxCollider();
@@ -48,7 +48,8 @@ void CollisionSystem::Process(EntityW::Time delta)
 			
 			if (collision.occured)
 			{
-				EventDispatcher::get().emitNow<CollisionEvent>(collision, entity1, entity2);
+				//logger.log("Collision!");
+				EntityW::EventDispatcher::get().emitNow<CollisionEvent>(collision, entity1, entity2);
 			}
 		}
 	}

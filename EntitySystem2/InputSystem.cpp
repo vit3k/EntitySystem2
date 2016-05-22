@@ -1,10 +1,10 @@
 #include "InputSystem.h"
-#include "EventDispatcher.h"
+#include "EntityW\EventDispatcher.h"
 
 InputSystem::InputSystem()
 {
-	EventDispatcher::get().subscribe<MoveUpEvent>(EventListenerDelegate(this, &InputSystem::OnMoveUp));
-	EventDispatcher::get().subscribe<MoveDownEvent>(EventListenerDelegate(this, &InputSystem::OnMoveDown));
+	EntityW::EventDispatcher::get().subscribe<MoveUpEvent>(EntityW::EventListenerDelegate(this, &InputSystem::OnMoveUp));
+	EntityW::EventDispatcher::get().subscribe<MoveDownEvent>(EntityW::EventListenerDelegate(this, &InputSystem::OnMoveDown));
 }
 void InputSystem::ProcessEntity(EntityW::EntitySp entity, EntityW::Time deltaTime)
 {
@@ -19,16 +19,27 @@ void InputSystem::ProcessEntity(EntityW::EntitySp entity, EntityW::Time deltaTim
 	else
 		velocity->velocity.y = 0;
 
+	if ((*entityState)[LaunchBall]) 
+	{
+			
+	}
+	
 	(*entityState).clear();
 }
 
-void InputSystem::OnMoveUp(EventSp e)
+void InputSystem::OnMoveUp(EntityW::EventSp e)
 {
 	auto iE = std::dynamic_pointer_cast<MoveUpEvent>(e);
 	state[iE->controller][Up] = true;
 }
-void InputSystem::OnMoveDown(EventSp e)
+void InputSystem::OnMoveDown(EntityW::EventSp e)
 {
 	auto iE = std::dynamic_pointer_cast<MoveDownEvent>(e);
 	state[iE->controller][Down] = true;
+}
+
+void InputSystem::OnLaunchBall(EntityW::EventSp e)
+{
+	auto iE = std::dynamic_pointer_cast<LaunchBallEvent>(e);
+	state[iE->controller][LaunchBall] = true;
 }

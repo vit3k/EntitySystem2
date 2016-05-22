@@ -152,21 +152,23 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="AttachSystem.cpp" />
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="CollisionSystem.cpp" />
     <ClCompile Include="EntityW\Entity.cpp" />
     <ClCompile Include="PhysicsSystem.cpp" />
-    <ClCompile Include="EventDispatcher.cpp" />
+    <ClCompile Include="EntityW\EventDispatcher.cpp" />
     <ClCompile Include="InputController.cpp" />
     <ClCompile Include="InputSystem.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="EntityW\System.cpp" />
-    <ClCompile Include="EntityW\World.cpp" />
     <ClCompile Include="MovementSystem.cpp" />
     <ClCompile Include="RenderSystem.cpp" />
+    <ClCompile Include="ScoreManager.cpp" />
     <ClCompile Include="TextRenderingSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AttachSystem.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="CollisionSystem.h" />
     <ClInclude Include="Components.h" />
@@ -175,14 +177,14 @@
     <ClInclude Include="EntityW\Entity.h" />
     <ClInclude Include="GameState.h" />
     <ClInclude Include="PhysicsSystem.h" />
+    <ClInclude Include="ScoreManager.h" />
     <ClInclude Include="Vector2.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="EntityW\System.h" />
     <ClInclude Include="EntityW\Time.h" />
-    <ClInclude Include="EntityW\World.h" />
     <ClInclude Include="Event.h" />
-    <ClInclude Include="EventDispatcher.h" />
-    <ClInclude Include="Fastdelegate.h" />
+    <ClInclude Include="EntityW\EventDispatcher.h" />
+    <ClInclude Include="EntityW\Fastdelegate.h" />
     <ClInclude Include="InputController.h" />
     <ClInclude Include="InputSystem.h" />
     <ClInclude Include="MovementSystem.h" />

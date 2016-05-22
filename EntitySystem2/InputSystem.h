@@ -6,14 +6,17 @@
 #include "EntityW\Time.h"
 
 enum Move {
-	Up, Down
+	Up, Down, LaunchBall
 };
 class InputSystem : public EntityW::System<VelocityComponent, InputComponent>
 {
 	std::map<int, std::map<Move, bool>> state;
+protected:
+	virtual std::string getName() { return "InputSystem"; }
 public:
 	InputSystem();
 	virtual void ProcessEntity(EntityW::EntitySp entity, EntityW::Time deltaTime);
-	void OnMoveUp(EventSp e);
-	void OnMoveDown(EventSp e);
+	void OnMoveUp(EntityW::EventSp e);
+	void OnMoveDown(EntityW::EventSp e);
+	void OnLaunchBall(EntityW::EventSp e);
 };

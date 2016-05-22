@@ -2,7 +2,6 @@
 #include <bitset>
 
 #include "EntityW/Entity.h"
-#include "EntityW/World.h"
 #include "Components.h"
 #include "RenderSystem.h"
 #include <selene.h>
@@ -10,9 +9,11 @@
 #include "InputController.h"
 #include "MovementSystem.h"
 #include "InputSystem.h"
-#include "EventDispatcher.h"
+#include "EntityW\EventDispatcher.h"
 #include "CollisionSystem.h"
 #include "PhysicsSystem.h"
+#include "ScoreManager.h"
+#include "AttachSystem.h"
 
 using namespace sel;
 
@@ -36,28 +37,17 @@ public:
 }*/
 int main()
 {
-	//RenderComponent test2 = test();
 	sf::RenderWindow window(sf::VideoMode(800, 600), "Pong");
+	
 	std::shared_ptr<RenderSystem> renderSystem(new RenderSystem(&window));
-	EntityW::World world;
-	world.attachSystem(renderSystem);
-
 	std::shared_ptr<TextRenderingSystem> textRenderingSystem(new TextRenderingSystem(&window));
-	world.attachSystem(textRenderingSystem);
-
 	auto movementSystem = std::make_shared<MovementSystem>();
-	world.attachSystem(movementSystem);
-
 	auto inputSystem = std::make_shared<InputSystem>();
-	world.attachSystem(inputSystem);
-
 	auto collisionSystem = std::make_shared<CollisionSystem>();
-	world.attachSystem(collisionSystem);
-
 	auto physicsSystem = std::make_shared<PhysicsSystem>();
-	world.attachSystem(physicsSystem);
+	auto attachSystem = std::make_shared<AttachSystem>();
 
-	EntityW::EntitySp paddle1 = world.createEntity();
+	EntityW::EntitySp paddle1 = EntityW::Entity::create();//world.createEntity();
 	paddle1->attach<TransformComponent>(Vector2(-10., -1.));
 	sf::RectangleShape paddle1Shape(sf::Vector2f(.5, 2.));
 	paddle1Shape.setFillColor(sf::Color::Green);
@@ -66,8 +56,9 @@ int main()
 	paddle1->attach<VelocityComponent>(Vector2(0, 0), 0);
 	paddle1->attach<CollisionComponent>(&RectCollisionShape(.5, 2.));
 	paddle1->attach<PhysicsComponent>(0., 1., Vector2(0, 1));
-	
-	EntityW::EntitySp paddle2 = world.createEntity();
+	paddle1->commit();
+
+	EntityW::EntitySp paddle2 = EntityW::Entity::create();//world.createEntity();
 	paddle2->attach<TransformComponent>(Vector2(9.5, -1.));
 	sf::RectangleShape paddle2Shape(sf::Vector2f(.5, 2.));
 	paddle2Shape.setFillColor(sf::Color::Red);
@@ -76,8 +67,9 @@ int main()
 	paddle2->attach<VelocityComponent>(Vector2(0, 0), 0);
 	paddle2->attach<CollisionComponent>(&RectCollisionShape(.5, 2.));
 	paddle2->attach<PhysicsComponent>(0., 1., Vector2(0, 1));
+	paddle2->commit();
 
-	EntityW::EntitySp ball = world.createEntity();
+	EntityW::EntitySp ball = EntityW::Entity::create();//world.createEntity("ball");
 	ball->attach<TransformComponent>(Vector2(-0.15, -5));
 	sf::CircleShape ballShape(0.3);
 	ballShape.setFillColor(sf::Color::White);
@@ -85,21 +77,43 @@ int main()
 	ball->attach<VelocityComponent>(Vector2(-8., 4.), 1);
 	ball->attach<CollisionComponent>(&CircleCollisionShape(.3));
 	ball->attach<PhysicsComponent>(1., .1, Vector2(1, 1));
+	ball->commit();
 
-	EntityW::EntitySp topBorder = world.createEntity();
+	EntityW::EntitySp topBorder = EntityW::Entity::create();//world.createEntity();
 	topBorder->attach<TransformComponent>(Vector2(-10.0, -8.5));
 	topBorder->attach<CollisionComponent>(&RectCollisionShape(20.0, 1));
-	
-	EntityW::EntitySp bottomBorder = world.createEntity();
+	topBorder->attach<PhysicsComponent>(0., 0., Vector2(0, 0));
+	topBorder->commit();
+
+	EntityW::EntitySp bottomBorder = EntityW::Entity::create();//world.createEntity();
 	bottomBorder->attach<TransformComponent>(Vector2(-10.0, 7.5));
 	bottomBorder->attach<CollisionComponent>(&RectCollisionShape(20.0, 1));
-	
-	world.refresh();
+	bottomBorder->attach<PhysicsComponent>(0., 0., Vector2(0, 0));
+	bottomBorder->commit();
+
+	EntityW::EntitySp paddle1Border = EntityW::Entity::create();//world.createEntity();
+	paddle1Border->attach<TransformComponent>(Vector2(-11.0, -7.5));
+	paddle1Border->attach<CollisionComponent>(&RectCollisionShape(1.0, 15.));
+	paddle1Border->attach<ScoringSurfaceComponent>(1, paddle1);
+	paddle1Border->commit();
+
+	EntityW::EntitySp paddle2Border = EntityW::Entity::create();//world.createEntity();
+	paddle2Border->attach<TransformComponent>(Vector2(10.0, -7.5));
+	paddle2Border->attach<CollisionComponent>(&RectCollisionShape(1.0, 15.));
+	paddle2Border->attach<ScoringSurfaceComponent>(0, paddle2);
+	paddle2Border->commit();
+
+	EntityW::EntitySp score = EntityW::Entity::create();//world.createEntity();
+	score->attach<TransformComponent>(Vector2(-9.5, -7.));
+	score->attach<TextComponent>("0 - 0");
+	score->commit();
 	
 	sf::Clock timer;
 	
 	sf::Time lastMillis = timer.getElapsedTime();
 	InputController inputController(0);
+
+	auto scoreManager = std::make_shared<ScoreManager>(ball, score);
 
 	while (window.isOpen())
 	{
@@ -119,16 +133,19 @@ int main()
 		inputController.process();
 
 		//event bus
-		EventDispatcher::get().process();
+		EntityW::EventDispatcher::get().process();
 
 		// logic systems
 		inputSystem->Process(delta);
 		movementSystem->Process(delta);
+		attachSystem->Process(delta);
 		collisionSystem->Process(delta);
 
 		physicsSystem->Process(delta);
+
 		//rendering pipeline
 		window.clear();
+		
 		renderSystem->Process(delta);
 		textRenderingSystem->Process(delta);
 		window.display();

@@ -5,6 +5,8 @@
 #include "Component.h"
 #include <vector>
 #include "Time.h"
+#include "EventDispatcher.h"
+#include "../Logger.h"
 
 namespace EntityW 
 {
@@ -13,15 +15,22 @@ namespace EntityW
 	class BaseSystem 
 	{
 	protected:
-		std::vector<EntitySp> entities;
+		std::map<long, EntitySp> entities;
 		World* world;
+		Logger logger;
+		virtual std::string getName() { return "BaseSystem";  }
 	public:
 		virtual void Process(Time deltaTime);
 		virtual void ProcessEntity(EntitySp entity, Time deltaTime);
-		virtual void OnEntityAdded(EntitySp entity);
-		void setWorld(World* world) { this->world = world; }
+		virtual void OnEntityAdded(EventSp event);
+		virtual void OnComponentAttached(EventSp event);
+		//void setWorld(World* world) { this->world = world; }
 		ComponentList components;
-		BaseSystem(ComponentList components) : components(components) {};
+		BaseSystem(ComponentList components) : components(components), logger(Logger::get(getName()))
+		{
+			EventDispatcher::get().subscribe<EntityCreatedEvent>(EntityW::EventListenerDelegate(this, &BaseSystem::OnEntityAdded));
+			EventDispatcher::get().subscribe<ComponentAttachedEvent>(EntityW::EventListenerDelegate(this, &BaseSystem::OnComponentAttached));
+		};
 	};
 
 	template<class... Args>

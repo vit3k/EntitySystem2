@@ -2,17 +2,15 @@
 
 void RenderSystem::Process(EntityW::Time deltaTime)
 {
-	for (EntityW::EntitySp entity : entities) {
+	for (auto pair : entities) {
+		auto entity = pair.second;
 		auto render = entity->get<RenderComponent>();
 		auto transform = entity->get<TransformComponent>();
 		auto shape = render->shape;
-		auto windowSize = renderWindow->getSize();
-
-		sf::View view;
-		view.reset(sf::FloatRect(-10., -7.5, 20., 15. ));
-		renderWindow->setView(view);
-
-		shape->setPosition(transform->position.x, transform->position.y);
+		
+		auto projectedPosition = Vector2((transform->position.x + 10) * 40, (transform->position.y + 7.5) * 40);
+		shape->setPosition(projectedPosition.x, projectedPosition.y);
+		shape->setScale(40, 40);
 		renderWindow->draw(*shape);
 	}	
 }

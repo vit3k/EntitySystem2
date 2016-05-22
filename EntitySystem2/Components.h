@@ -3,6 +3,8 @@
 #include <SFML/Graphics.hpp>
 #include "Vector2.h"
 #include <glm.hpp>
+#include "EntityW\Entity.h"
+#include "Collider.h"
 
 class TransformComponent : public EntityW::Component {
 public:
@@ -116,6 +118,7 @@ public:
 
 class CollisionComponent : public EntityW::Component {
 public:
+	Collision collision;
 	CollisionShape* shape;
 	CollisionComponent(CollisionShape* shape) : shape(shape) {};
 };
@@ -138,3 +141,19 @@ public:
 	}
 };
 
+class ScoringSurfaceComponent : public EntityW::Component {
+public:
+	int playerId;
+	EntityW::EntitySp paddle;
+	ScoringSurfaceComponent(int playerId, EntityW::EntitySp paddle) : playerId(playerId), paddle(paddle) {}
+};
+
+class AttachComponent : public EntityW::Component {
+public:
+	TransformComponentSp parentTransform;
+	Vector2 relativePosition;
+	AttachComponent(TransformComponentSp parentTransform, Vector2 relativePosition)
+		: parentTransform(parentTransform), relativePosition(relativePosition) {
+
+	}
+};

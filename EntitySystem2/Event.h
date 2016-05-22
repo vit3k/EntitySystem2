@@ -1,36 +1,9 @@
 #pragma once
 
-#include <memory>
-#include "EntityW\ClassTypeId.h"
-#include <string>
-
-class BaseEvent
-{
-public:
-	virtual EntityW::TypeId getTypeId() = 0;
-	virtual std::string toString()
-	{
-		return std::to_string(getTypeId());
-	}
-};
+#include "EntityW\EventDispatcher.h"
 
 template<class T>
-class Event : public BaseEvent
-{
-public:
-	virtual EntityW::TypeId getTypeId() {
-		return EventTypeId<T>();
-	};
-};
-
-template <class T>
-EntityW::TypeId EventTypeId()
-{
-	return EntityW::ClassTypeId<BaseEvent>::GetTypeId<T>();
-}
-
-template<class T>
-class InputEvent : public Event<T>
+class InputEvent : public EntityW::Event<T>
 {
 public:
 	int controller;
@@ -52,4 +25,9 @@ public:
 	StopEvent(int controller) : InputEvent(controller) {};
 };
 
-typedef std::shared_ptr<BaseEvent> EventSp;
+class LaunchBallEvent : public InputEvent<LaunchBallEvent> {
+public:
+	LaunchBallEvent(int controller) : InputEvent(controller) {};
+};
+
+

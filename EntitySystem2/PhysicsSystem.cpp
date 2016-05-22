@@ -1,5 +1,5 @@
 #include "PhysicsSystem.h"
-#include "EventDispatcher.h"
+#include "EntityW\EventDispatcher.h"
 #include "EntityW\Entity.h"
 #include <sstream>
 
@@ -9,22 +9,24 @@ void PhysicsSystem::Process(EntityW::Time deltaTime)
 {
 	for (auto collisionEvent : collisions)
 	{
-		//logger.log("Collision: " + Vector2Utils::toString(collisionEvent->collision.normal)+" "+std::to_string(collisionEvent->collision.depth));
+		
 		auto entity1 = collisionEvent->entity1;
 		auto entity2 = collisionEvent->entity2;
 		
-		float entity1Mass = getMass(entity1);
-		float entity2Mass = getMass(entity2);
-		float entity1MassProp = 1-(entity1Mass / (entity1Mass + entity2Mass));
-		float entity2MassProp = 1 - (entity2Mass / (entity1Mass + entity2Mass));
+		if (entity1->has<PhysicsComponent>() && entity2->has<PhysicsComponent>()) {
+			float entity1Mass = getMass(entity1);
+			float entity2Mass = getMass(entity2);
+			float entity1MassProp = 1 - (entity1Mass / (entity1Mass + entity2Mass));
+			float entity2MassProp = 1 - (entity2Mass / (entity1Mass + entity2Mass));
 
-		Vector2 entity1PropVector = calculatePropVector(entity1, entity2, entity1MassProp);
-		Vector2 entity2PropVector = -calculatePropVector(entity2, entity1, entity2MassProp);
-		correctEntity(entity1, collisionEvent->collision, entity1PropVector);
-		correctEntity(entity2, collisionEvent->collision, entity2PropVector);
+			Vector2 entity1PropVector = calculatePropVector(entity1, entity2, entity1MassProp);
+			Vector2 entity2PropVector = -calculatePropVector(entity2, entity1, entity2MassProp);
+			correctEntity(entity1, collisionEvent->collision, entity1PropVector);
+			correctEntity(entity2, collisionEvent->collision, entity2PropVector);
 
-		bounceEntity(entity1, collisionEvent->collision, entity1PropVector, getVelocity(entity2));
-		bounceEntity(entity2, collisionEvent->collision, entity2PropVector, getVelocity(entity1));
+			bounceEntity(entity1, collisionEvent->collision, entity1PropVector, getVelocity(entity2));
+			bounceEntity(entity2, collisionEvent->collision, entity2PropVector, getVelocity(entity1));
+		}
 	}
 	collisions.clear();
 }
@@ -102,16 +104,16 @@ void PhysicsSystem::correctEntity(EntityW::EntitySp entity, Collision& collision
 	auto correction = collision.normal * collision.depth;
 	correction.x *= prop.x;
 	correction.y *= prop.y;
-	//logger.log("C "+Vector2Utils::toString(prop)+ " "+Vector2Utils::toString(correction));
+	logger.log("C "+Vector2Utils::toString(prop)+ " "+Vector2Utils::toString(correction));
 	transform->position += correction;	
 }
 
 PhysicsSystem::PhysicsSystem() 
 {
-	EventDispatcher::get().subscribe<CollisionEvent>(EventListenerDelegate(this, &PhysicsSystem::OnCollision));
+	EventDispatcher::get().subscribe<CollisionEvent>(EntityW::EventListenerDelegate(this, &PhysicsSystem::OnCollision));
 }
 
-void PhysicsSystem::OnCollision(EventSp e)
+void PhysicsSystem::OnCollision(EntityW::EventSp e)
 {
 	auto collisionEvent = std::dynamic_pointer_cast<CollisionEvent>(e);
 	collisions.push_back(collisionEvent);

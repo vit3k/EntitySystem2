@@ -7,7 +7,7 @@
 
 namespace EntityW {
 	class Component {
-
+	
 	};
 
 	template <class T>

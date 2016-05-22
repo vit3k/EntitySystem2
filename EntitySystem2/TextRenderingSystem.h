@@ -6,6 +6,8 @@ class TextRenderingSystem : public EntityW::System<TransformComponent, TextCompo
 {
 	sf::RenderTarget* renderTarget;
 	sf::Font font;
+protected:
+	virtual std::string getName() { return "TextRenderingSystem"; }
 public:
 	TextRenderingSystem(sf::RenderTarget* renderTarget) : renderTarget(renderTarget) {
 		font.loadFromFile("cour.ttf");
