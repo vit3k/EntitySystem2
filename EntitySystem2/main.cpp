@@ -4,7 +4,6 @@
 #include "EntityW/Entity.h"
 #include "Components.h"
 #include "RenderSystem.h"
-#include <selene.h>
 #include "TextRenderingSystem.h"
 #include "InputController.h"
 #include "MovementSystem.h"
@@ -14,8 +13,7 @@
 #include "PhysicsSystem.h"
 #include "ScoreManager.h"
 #include "AttachSystem.h"
-
-using namespace sel;
+#include "sol.hpp"
 
 class TestClass {
 public:
