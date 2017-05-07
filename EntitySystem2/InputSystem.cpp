@@ -21,7 +21,7 @@ void InputSystem::ProcessEntity(EntityW::EntitySp entity, EntityW::Time deltaTim
 
 	if ((*entityState)[LaunchBall]) 
 	{
-			
+		
 	}
 	
 	(*entityState).clear();

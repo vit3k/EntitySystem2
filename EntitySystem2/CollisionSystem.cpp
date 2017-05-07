@@ -17,13 +17,17 @@ CollisionSystem::~CollisionSystem() {
 
 void CollisionSystem::Process(EntityW::Time delta)
 {
-	for (int i = 0; i < entities.size(); i++)
+	for (auto entity1i = entities.begin(); entity1i != entities.end(); entity1i++)
 	{
-		auto entity1 = entities[i];
+		auto entity1 = entity1i->second;
 		auto collisionComponent1 = entity1->get<CollisionComponent>();
-		for (int j = i + 1; j < entities.size(); j++)
+		for (auto entity2i = entity1i; entity2i != entities.end(); entity2i++)
 		{
-			auto entity2 = entities[j];
+			auto entity2 = entity2i->second;
+			if (entity1 == entity2)
+			{
+				continue;
+			}
 			auto collisionComponent2 = entity2->get<CollisionComponent>();
 
 			Collider* collider = colliders[ColliderType(collisionComponent1->shape->getType(), collisionComponent2->shape->getType())];

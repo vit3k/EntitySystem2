@@ -10,7 +10,7 @@ namespace EntityW {
 	class ComponentAttachedEvent;
 	class Entity;
 
-	class Entity : public std::enable_shared_from_this<Entity> {
+	class Entity {
 		std::map<TypeId, ComponentSp> components;
 		ComponentList componentList;
 		static int currentEntityId;
@@ -18,6 +18,9 @@ namespace EntityW {
 		std::shared_ptr<Entity> thisPtr;
 		static std::map<long, std::shared_ptr<Entity>> entities;
 	public:
+		void setPointer(std::shared_ptr<Entity> ptr) {
+			thisPtr = ptr;
+		}
 		static int getNextEntityId() { return currentEntityId++; }
 		std::string name;
 
@@ -38,15 +41,16 @@ namespace EntityW {
 		};
 		
 		static std::shared_ptr<Entity> create() {
-			return std::make_shared<Entity>();
+			auto entity = std::make_shared<Entity>();
+			entity->setPointer(entity);
+			return entity;
 		}
 
-		void commit() {
-			thisPtr = shared_from_this();
+		std::shared_ptr<Entity> commit() {
 			EventDispatcher::get().emitNow<EntityCreatedEvent>(thisPtr);
 			entities[id] = thisPtr;
 			commited = true;
-			
+			return thisPtr;
 		}
 	};
 

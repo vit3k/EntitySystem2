@@ -14,27 +14,49 @@
 #include "ScoreManager.h"
 #include "AttachSystem.h"
 #include "sol.hpp"
+#include <algorithm>
 
-class TestClass {
-public:
-	virtual int test() { return 1; }
-};
-/*RenderComponent test(){
-	State state;
-	state["Vector2"].SetClass<Vector2, double, double>("x", &Vector2::x, "y", &Vector2::y);
-	state["TransformComponent"].SetClass<TransformComponent, Vector2>();
-	state["InputComponent"].SetClass<InputComponent, int>();
-	state["VelocityComponent"].SetClass<VelocityComponent, Vector2, float>();
-	state["Shape"].SetClass<sf::Shape>();
-	//state["RectangleShape"].SetClass<sf::RectangleShape, Vector2>();
-	state["RenderComponent"].SetClass<RenderComponent, sf::Shape>();
-	state.Load("test.lua");
-	auto entity = state["entity"];
-	RenderComponent test = entity["render"];
-	return test;
-}*/
+EntityW::EntitySp createEntity(sol::table entityData)
+{
+	auto entity = EntityW::Entity::create();
+	entityData.for_each([entity](sol::object key, sol::object value) {
+		auto componentName = key.as<std::string>();
+		if (componentName == "transform")
+		{
+			entity->attach<TransformComponent>(value.as<Vector2>());
+		}
+	});
+	entity->commit();
+	return entity;
+}
+
 int main()
 {
+	sol::state lua;
+	
+	lua.open_libraries(sol::lib::base);
+	lua.script("print('bark bark bark!')");
+
+	lua.new_usertype<Vector2>("Vector2",
+		sol::constructors<Vector2(double, double)>(),
+		"x", &Vector2::x,
+		"y", &Vector2::y
+	);
+
+	lua.new_usertype<TransformComponent>("TransformComponent",
+		sol::constructors<TransformComponent(Vector2)>(),
+		"position", &TransformComponent::position
+	);
+
+	lua.new_usertype<EntityW::Entity>("Entity",
+		sol::constructors<EntityW::Entity()>(),
+		"id", &EntityW::Entity::id
+	);
+
+	lua["createEntity"] = createEntity;
+
+	lua.script_file("test.lua");
+
 	sf::RenderWindow window(sf::VideoMode(800, 600), "Pong");
 	
 	std::shared_ptr<RenderSystem> renderSystem(new RenderSystem(&window));
