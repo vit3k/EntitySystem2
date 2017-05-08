@@ -1,4 +1,5 @@
 #include "EventDispatcher.h"
+#include "../CollisionSystem.h"
 
 namespace EntityW {
 	void EventDispatcher::process()
@@ -20,5 +21,16 @@ namespace EntityW {
 			currentQueue = 1;
 		else
 			currentQueue = 0;
+	}
+
+	void EventDispatcher::scriptSubscribe(TypeId eventTypeId, sol::function listener)
+	{
+
+			if (scriptListeners.find(eventTypeId) == scriptListeners.end())
+			{
+				scriptListeners[eventTypeId] = std::vector<sol::function>();
+			}
+			scriptListeners[eventTypeId].push_back(listener);
+
 	}
 }

@@ -4,6 +4,7 @@
 #include <map>
 #include "Component.h"
 #include "EventDispatcher.h"
+#include "../sol.hpp"
 
 namespace EntityW {
 	class EntityCreatedEvent;
@@ -11,6 +12,7 @@ namespace EntityW {
 	class Entity;
 
 	class Entity {
+	protected:
 		std::map<TypeId, ComponentSp> components;
 		ComponentList componentList;
 		static int currentEntityId;
@@ -30,6 +32,7 @@ namespace EntityW {
 		template <typename T>
 		std::shared_ptr<T> get();
 
+		//sol::objecty
 		bool hasComponents(ComponentList componentList);
 		template <typename T>
 		bool has() {
@@ -52,6 +55,10 @@ namespace EntityW {
 			commited = true;
 			return thisPtr;
 		}
+
+		bool scriptHas(TypeId component);
+		sol::object scriptGet(TypeId component, sol::this_state s);
+		void attach(ComponentSp component);
 	};
 
 	typedef std::shared_ptr<Entity> EntitySp;
@@ -88,6 +95,9 @@ namespace EntityW {
 		ComponentSp component;
 		ComponentAttachedEvent(EntitySp entity, ComponentSp component) : entity(entity), component(component) {}
 	};
+
+
 }
+
 
 #endif

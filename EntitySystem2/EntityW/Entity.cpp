@@ -1,4 +1,5 @@
 #include "Entity.h"
+#include "../Components.h"
 
 namespace EntityW {
 	int Entity::currentEntityId = 0;
@@ -7,4 +8,15 @@ namespace EntityW {
 	bool Entity::hasComponents(ComponentList componentList) {
 		return (this->componentList & componentList) == componentList;
 	};
+
+	sol::object Entity::scriptGet(TypeId component, sol::this_state s)
+	{
+		sol::state_view lua(s);
+		return sol::make_object(lua, components[component]);
+	}
+
+	bool Entity::scriptHas(TypeId component)
+	{
+		return componentList[component];
+	}
 }

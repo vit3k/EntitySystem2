@@ -25,9 +25,18 @@ EntityW::EntitySp createEntity(sol::table entityData)
 		{
 			entity->attach<TransformComponent>(value.as<Vector2>());
 		}
+		else if (componentName == "text")
+		{
+			entity->attach<TextComponent>(value.as<std::string>());
+		}
 	});
 	entity->commit();
 	return entity;
+}
+
+void subscribe(EntityW::TypeId eventTypeId, sol::function listener)
+{
+	EntityW::EventDispatcher::get().scriptSubscribe(eventTypeId, listener);
 }
 
 int main()
@@ -50,10 +59,53 @@ int main()
 
 	lua.new_usertype<EntityW::Entity>("Entity",
 		sol::constructors<EntityW::Entity()>(),
-		"id", &EntityW::Entity::id
+		"id", &EntityW::Entity::id,
+		"get", &EntityW::Entity::scriptGet,
+		"has", &EntityW::Entity::scriptHas
+	);
+
+	lua.new_usertype<TextComponent>("TextComponent",
+		sol::constructors<TextComponent(std::string)>(),
+		"text", &TextComponent::text
+	);
+
+	lua.new_usertype<Collision>("Collision",
+		sol::constructors<Collision()>(),
+		"occured", &Collision::occured,
+		"depth", &Collision::depth,
+		"normal", &Collision::normal
+	);
+
+	lua.new_usertype<CollisionEvent>("CollisionEvent",
+		sol::constructors<CollisionEvent(Collision, EntityW::EntitySp, EntityW::EntitySp)>(),
+		"entity1", &CollisionEvent::entity1,
+		"entity2", &CollisionEvent::entity2,
+		"collision", &CollisionEvent::collision
+	);
+
+	lua.new_usertype<ScoringSurfaceComponent>("ScoringSurfaceComponent",
+		sol::constructors < ScoringSurfaceComponent(int, EntityW::EntitySp)>(),
+		"paddle", &ScoringSurfaceComponent::paddle,
+		"playerId", &ScoringSurfaceComponent::playerId
+	);
+
+	lua.new_usertype<AttachComponent>("AttachComponent",
+		sol::constructors<AttachComponent(TransformComponentSp, Vector2)>(),
+		"parentTransform", &AttachComponent::parentTransform,
+		"relativePosition", &AttachComponent::relativePosition
+	);
+
+	lua["Events"] = lua.create_table_with(
+		"Collision", EntityW::EventTypeId<CollisionEvent>()
+	);
+
+	lua["Components"] = lua.create_table_with(
+		"Transform", EntityW::ComponentTypeId<TransformComponent>(),
+		"Text", EntityW::ComponentTypeId<TextComponent>()
 	);
 
 	lua["createEntity"] = createEntity;
+	lua["subscribe"] = subscribe;
 
 	lua.script_file("test.lua");
 

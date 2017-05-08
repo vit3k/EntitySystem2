@@ -7,6 +7,7 @@
 #include "ClassTypeId.h"
 #include <memory>
 #include <string>
+#include "../sol.hpp"
 
 namespace EntityW {
 	class BaseEvent
@@ -34,6 +35,14 @@ namespace EntityW {
 		return ClassTypeId<BaseEvent>::GetTypeId<T>();
 	}
 
+	class ScriptEvent : public BaseEvent
+	{
+	public:
+		virtual TypeId getTypeId() {
+			return 10000;
+		}
+	};
+
 	typedef std::shared_ptr<BaseEvent> EventSp;
 
 	typedef fastdelegate::FastDelegate1<EventSp> EventListenerDelegate;
@@ -43,6 +52,8 @@ namespace EntityW {
 		std::vector<EventSp> queues[2];
 		int currentQueue = 0;
 		EventListenersMap listeners;
+		std::map<TypeId, std::vector<sol::function>> scriptListeners;
+
 		EventDispatcher() {};
 //		Logger logger = Logger::get("EventDispatcher");
 	public:
@@ -67,6 +78,13 @@ namespace EntityW {
 					listener(e);
 				}
 			}
+			if (scriptListeners.find(e->getTypeId()) != scriptListeners.end())
+			{
+				for (auto listener : scriptListeners[e->getTypeId()])
+				{
+					listener(e);
+				}
+			}
 		}
 
 		template<class T>
@@ -80,6 +98,7 @@ namespace EntityW {
 			listeners[type].push_back(listener);
 		}
 
+		void scriptSubscribe(TypeId eventName, sol::function listener);
 
 		void process();
 	};
