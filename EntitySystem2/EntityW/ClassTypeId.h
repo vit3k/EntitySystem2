@@ -15,6 +15,10 @@ namespace EntityW {
 			return id;
 		}
 
+		static TypeId GetScriptTypeId() {
+			return m_nextTypeId++;
+		}
+
 	private:
 
 		static TypeId m_nextTypeId;

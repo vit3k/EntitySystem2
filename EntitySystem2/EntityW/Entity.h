@@ -14,6 +14,8 @@ namespace EntityW {
 	class Entity {
 	protected:
 		std::map<TypeId, ComponentSp> components;
+		std::map<TypeId, sol::object> scriptComponents;
+
 		ComponentList componentList;
 		static int currentEntityId;
 		bool commited = false;
@@ -58,7 +60,7 @@ namespace EntityW {
 
 		bool scriptHas(TypeId component);
 		sol::object scriptGet(TypeId component, sol::this_state s);
-		void attach(ComponentSp component);
+		void scriptAttach(TypeId componentId, sol::object component);
 	};
 
 	typedef std::shared_ptr<Entity> EntitySp;

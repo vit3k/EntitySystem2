@@ -4,6 +4,7 @@
 #include "ClassTypeId.h"
 #include <bitset>
 #include <memory>
+#include <string>
 
 namespace EntityW {
 	class Component {
@@ -15,6 +16,8 @@ namespace EntityW {
 	{
 		return ClassTypeId<Component>::GetTypeId<T>();
 	}
+
+	TypeId ScriptComponentTypeId();
 
 	using ComponentList = std::bitset<32>;
 

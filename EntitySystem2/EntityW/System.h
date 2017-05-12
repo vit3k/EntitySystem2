@@ -63,6 +63,13 @@ namespace EntityW
 	{
 		return ClassTypeId<System>::GetTypeId<T>();
 	}
+
+	/*class ScriptSystem : public BaseSystem
+	{
+		sol::table script;
+	public:
+		ScriptSystem(sol::table script) : script(script) {};
+	};*/
 }
 
 #endif

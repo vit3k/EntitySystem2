@@ -15,6 +15,9 @@
 #include "AttachSystem.h"
 #include "sol.hpp"
 #include <algorithm>
+#include "EntityW\ClassTypeId.h"
+
+std::map<std::string, EntityW::TypeId> scriptComponentsMap;
 
 EntityW::EntitySp createEntity(sol::table entityData)
 {
@@ -29,6 +32,44 @@ EntityW::EntitySp createEntity(sol::table entityData)
 		{
 			entity->attach<TextComponent>(value.as<std::string>());
 		}
+		else if (componentName == "render")
+		{
+			auto shape = value.as<sol::table>().get<sf::Shape*>("shape");
+			entity->attach<RenderComponent>(shape);
+		}
+		else if (componentName == "velocity")
+		{
+			auto table = value.as<sol::table>();
+			entity->attach<VelocityComponent>(table.get<Vector2>("velocity"), table.get<float>("bounciness"));
+		}
+		else if (componentName == "input")
+		{
+			entity->attach<InputComponent>(value.as<int>());
+		}
+		else if (componentName == "collision")
+		{
+			auto table = value.as<sol::table>();
+			entity->attach<CollisionComponent>(table.get<CollisionShape*>("shape"));
+		}
+		else if (componentName == "physics")
+		{
+			auto table = value.as<sol::table>();
+			entity->attach<PhysicsComponent>(table.get<float>("bounciness"), table.get<float>("mass"), table.get<Vector2>("constraints"));
+		}
+		else if (componentName == "scoringSurface")
+		{
+			auto table = value.as<sol::table>();
+			entity->attach<ScoringSurfaceComponent>(table.get<int>("playerId"), table.get<EntityW::EntitySp>("paddle"));
+		}
+		else if (componentName == "attach")
+		{
+			auto table = value.as<sol::table>();
+			entity->attach<AttachComponent>(table.get<TransformComponentSp>("parent"), table.get<Vector2>("relative"));
+		}
+		else
+		{
+			entity->scriptAttach(scriptComponentsMap[componentName], value.as<sol::object>());
+		}
 	});
 	entity->commit();
 	return entity;
@@ -39,8 +80,46 @@ void subscribe(EntityW::TypeId eventTypeId, sol::function listener)
 	EntityW::EventDispatcher::get().scriptSubscribe(eventTypeId, listener);
 }
 
+EntityW::TypeId registerComponent(std::string name)
+{
+	auto id = EntityW::ScriptComponentTypeId();
+	if (scriptComponentsMap.find(name) != scriptComponentsMap.end())
+	{
+		return scriptComponentsMap[name];
+	}
+	else
+	{
+		scriptComponentsMap[name] = id;
+		return id;
+	}
+}
+/*
+std::vector < std::shared_ptr<EntityW::ScriptSystem>> scriptSystems;
+
+void registerSystem(std::string name, sol::table script)
+{
+	auto system = std::make_shared<EntityW::ScriptSystem>(script);
+	scriptSystems.push_back(system);
+}
+*/
+
+Vector2 glmNormalize(Vector2 vec)
+{
+	return glm::normalize(vec);
+}
+
 int main()
 {
+	sf::RenderWindow window(sf::VideoMode(800, 600), "Pong");
+
+	std::shared_ptr<RenderSystem> renderSystem(new RenderSystem(&window));
+	std::shared_ptr<TextRenderingSystem> textRenderingSystem(new TextRenderingSystem(&window));
+	auto movementSystem = std::make_shared<MovementSystem>();
+	auto inputSystem = std::make_shared<InputSystem>();
+	auto collisionSystem = std::make_shared<CollisionSystem>();
+	auto physicsSystem = std::make_shared<PhysicsSystem>();
+	auto attachSystem = std::make_shared<AttachSystem>();
+
 	sol::state lua;
 	
 	lua.open_libraries(sol::lib::base);
@@ -52,21 +131,26 @@ int main()
 		"y", &Vector2::y
 	);
 
+	lua.new_simple_usertype<EntityW::Component>("Component");
+
 	lua.new_usertype<TransformComponent>("TransformComponent",
 		sol::constructors<TransformComponent(Vector2)>(),
-		"position", &TransformComponent::position
+		"position", &TransformComponent::position,
+		sol::base_classes, sol::bases<EntityW::Component>()
 	);
 
 	lua.new_usertype<EntityW::Entity>("Entity",
 		sol::constructors<EntityW::Entity()>(),
 		"id", &EntityW::Entity::id,
 		"get", &EntityW::Entity::scriptGet,
-		"has", &EntityW::Entity::scriptHas
+		"has", &EntityW::Entity::scriptHas,
+		"attach", &EntityW::Entity::scriptAttach
 	);
 
 	lua.new_usertype<TextComponent>("TextComponent",
 		sol::constructors<TextComponent(std::string)>(),
-		"text", &TextComponent::text
+		"text", &TextComponent::text,
+		sol::base_classes, sol::bases<EntityW::Component>()
 	);
 
 	lua.new_usertype<Collision>("Collision",
@@ -86,13 +170,84 @@ int main()
 	lua.new_usertype<ScoringSurfaceComponent>("ScoringSurfaceComponent",
 		sol::constructors < ScoringSurfaceComponent(int, EntityW::EntitySp)>(),
 		"paddle", &ScoringSurfaceComponent::paddle,
-		"playerId", &ScoringSurfaceComponent::playerId
+		"playerId", &ScoringSurfaceComponent::playerId,
+		sol::base_classes, sol::bases<EntityW::Component>()
 	);
 
 	lua.new_usertype<AttachComponent>("AttachComponent",
 		sol::constructors<AttachComponent(TransformComponentSp, Vector2)>(),
 		"parentTransform", &AttachComponent::parentTransform,
-		"relativePosition", &AttachComponent::relativePosition
+		"relativePosition", &AttachComponent::relativePosition,
+		sol::base_classes, sol::bases<EntityW::Component>()
+	);
+
+	lua.new_simple_usertype<sf::Vector2f>("Vector2f",
+		sol::constructors < sf::Vector2f(float, float) > ()
+	);
+
+	lua.new_simple_usertype<sf::Shape>("Shape",
+		"setFillColor", &sf::RectangleShape::setFillColor
+	);
+
+	lua.new_simple_usertype<sf::RectangleShape>("RectangleShape",
+		sol::constructors<sf::RectangleShape(sf::Vector2f)>(),
+		"setFillColor", &sf::RectangleShape::setFillColor,
+		sol::base_classes, sol::base_list<sf::Shape>()
+	);
+
+	lua.new_simple_usertype<sf::CircleShape>("CircleShape",
+		sol::constructors<sf::CircleShape(float)>(),
+		sol::base_classes, sol::base_list<sf::Shape>()
+		);
+
+	lua.new_usertype<RenderComponent>("RenderComponent",
+		sol::constructors<RenderComponent(sf::Shape*)>(),
+		sol::base_classes, sol::bases<EntityW::Component>()
+		
+		);
+
+	lua.new_usertype<InputComponent>("InputComponent",
+		sol::constructors<InputController(int)>(),
+		sol::base_classes, sol::bases<EntityW::Component>()
+	);
+
+	lua.new_usertype<VelocityComponent>("VelocityComponent",
+		sol::constructors<VelocityComponent(Vector2, float)>(),
+		"velocity", &VelocityComponent::velocity,
+		"bounciness", &VelocityComponent::bounciness,
+		sol::base_classes, sol::bases<EntityW::Component>()
+	);
+
+	lua.new_usertype<CollisionShape>("CollisionShape");
+	lua.new_usertype<RectCollisionShape>("RectCollisionShape",
+		sol::constructors<RectCollisionShape(float, float)>(),
+		sol::base_classes, sol::bases<CollisionShape>()
+	);
+	
+	lua.new_usertype<CircleCollisionShape>("CircleCollisionShape",
+		sol::constructors<CircleCollisionShape(float)>(),
+		sol::base_classes, sol::bases<CollisionShape>()
+		);
+
+	lua.new_usertype<CollisionComponent>("CollisionComponent",
+		sol::constructors<CollisionComponent(CollisionShape*)>(),
+		"shape", &CollisionComponent::shape,
+		sol::base_classes, sol::bases<EntityW::Component>()
+	);
+
+	lua.new_usertype<PhysicsComponent>("PhysicsComponent",
+		sol::constructors<PhysicsComponent(float, float, Vector2)>(),
+		"constraints", &PhysicsComponent::constraints,
+		"bounciness", &PhysicsComponent::bounciness,
+		"mass", &PhysicsComponent::mass,
+		"invertedMass", &PhysicsComponent::invertedMass,
+		sol::base_classes, sol::bases<EntityW::Component>()
+	);
+
+	lua.new_enum("sfColor",
+		"Green", sf::Color::Green,
+		"Red", sf::Color::Red,
+		"White", sf::Color::White
 	);
 
 	lua["Events"] = lua.create_table_with(
@@ -101,91 +256,31 @@ int main()
 
 	lua["Components"] = lua.create_table_with(
 		"Transform", EntityW::ComponentTypeId<TransformComponent>(),
-		"Text", EntityW::ComponentTypeId<TextComponent>()
+		"Text", EntityW::ComponentTypeId<TextComponent>(),
+		"Render", EntityW::ComponentTypeId<RenderComponent>(),
+		"Input", EntityW::ComponentTypeId<InputComponent>(),
+		"Collision", EntityW::ComponentTypeId<CollisionComponent>(),
+		"Physics", EntityW::ComponentTypeId<PhysicsComponent>(),
+		"ScoringSurface", EntityW::ComponentTypeId<ScoringSurfaceComponent>(),
+		"Attach", EntityW::ComponentTypeId<AttachComponent>(),
+		"Velocity", EntityW::ComponentTypeId<VelocityComponent>()
 	);
+
+	sol::table glm = lua.create_named_table("glm");
+	glm.set_function("normalize", &glmNormalize);
 
 	lua["createEntity"] = createEntity;
 	lua["subscribe"] = subscribe;
+	lua["registerComponent"] = registerComponent;
 
 	lua.script_file("test.lua");
 
-	sf::RenderWindow window(sf::VideoMode(800, 600), "Pong");
-	
-	std::shared_ptr<RenderSystem> renderSystem(new RenderSystem(&window));
-	std::shared_ptr<TextRenderingSystem> textRenderingSystem(new TextRenderingSystem(&window));
-	auto movementSystem = std::make_shared<MovementSystem>();
-	auto inputSystem = std::make_shared<InputSystem>();
-	auto collisionSystem = std::make_shared<CollisionSystem>();
-	auto physicsSystem = std::make_shared<PhysicsSystem>();
-	auto attachSystem = std::make_shared<AttachSystem>();
-
-	EntityW::EntitySp paddle1 = EntityW::Entity::create();//world.createEntity();
-	paddle1->attach<TransformComponent>(Vector2(-10., -1.));
-	sf::RectangleShape paddle1Shape(sf::Vector2f(.5, 2.));
-	paddle1Shape.setFillColor(sf::Color::Green);
-	paddle1->attach<RenderComponent>(&paddle1Shape);
-	paddle1->attach<InputComponent>(0);
-	paddle1->attach<VelocityComponent>(Vector2(0, 0), 0);
-	paddle1->attach<CollisionComponent>(&RectCollisionShape(.5, 2.));
-	paddle1->attach<PhysicsComponent>(0., 1., Vector2(0, 1));
-	paddle1->commit();
-
-	EntityW::EntitySp paddle2 = EntityW::Entity::create();//world.createEntity();
-	paddle2->attach<TransformComponent>(Vector2(9.5, -1.));
-	sf::RectangleShape paddle2Shape(sf::Vector2f(.5, 2.));
-	paddle2Shape.setFillColor(sf::Color::Red);
-	paddle2->attach<RenderComponent>(&paddle2Shape);
-	paddle2->attach<InputComponent>(1);
-	paddle2->attach<VelocityComponent>(Vector2(0, 0), 0);
-	paddle2->attach<CollisionComponent>(&RectCollisionShape(.5, 2.));
-	paddle2->attach<PhysicsComponent>(0., 1., Vector2(0, 1));
-	paddle2->commit();
-
-	EntityW::EntitySp ball = EntityW::Entity::create();//world.createEntity("ball");
-	ball->attach<TransformComponent>(Vector2(-0.15, -5));
-	sf::CircleShape ballShape(0.3);
-	ballShape.setFillColor(sf::Color::White);
-	ball->attach<RenderComponent>(&ballShape);
-	ball->attach<VelocityComponent>(Vector2(-8., 4.), 1);
-	ball->attach<CollisionComponent>(&CircleCollisionShape(.3));
-	ball->attach<PhysicsComponent>(1., .1, Vector2(1, 1));
-	ball->commit();
-
-	EntityW::EntitySp topBorder = EntityW::Entity::create();//world.createEntity();
-	topBorder->attach<TransformComponent>(Vector2(-10.0, -8.5));
-	topBorder->attach<CollisionComponent>(&RectCollisionShape(20.0, 1));
-	topBorder->attach<PhysicsComponent>(0., 0., Vector2(0, 0));
-	topBorder->commit();
-
-	EntityW::EntitySp bottomBorder = EntityW::Entity::create();//world.createEntity();
-	bottomBorder->attach<TransformComponent>(Vector2(-10.0, 7.5));
-	bottomBorder->attach<CollisionComponent>(&RectCollisionShape(20.0, 1));
-	bottomBorder->attach<PhysicsComponent>(0., 0., Vector2(0, 0));
-	bottomBorder->commit();
-
-	EntityW::EntitySp paddle1Border = EntityW::Entity::create();//world.createEntity();
-	paddle1Border->attach<TransformComponent>(Vector2(-11.0, -7.5));
-	paddle1Border->attach<CollisionComponent>(&RectCollisionShape(1.0, 15.));
-	paddle1Border->attach<ScoringSurfaceComponent>(1, paddle1);
-	paddle1Border->commit();
-
-	EntityW::EntitySp paddle2Border = EntityW::Entity::create();//world.createEntity();
-	paddle2Border->attach<TransformComponent>(Vector2(10.0, -7.5));
-	paddle2Border->attach<CollisionComponent>(&RectCollisionShape(1.0, 15.));
-	paddle2Border->attach<ScoringSurfaceComponent>(0, paddle2);
-	paddle2Border->commit();
-
-	EntityW::EntitySp score = EntityW::Entity::create();//world.createEntity();
-	score->attach<TransformComponent>(Vector2(-9.5, -7.));
-	score->attach<TextComponent>("0 - 0");
-	score->commit();
-	
 	sf::Clock timer;
 	
 	sf::Time lastMillis = timer.getElapsedTime();
 	InputController inputController(0);
 
-	auto scoreManager = std::make_shared<ScoreManager>(ball, score);
+	//auto scoreManager = std::make_shared<ScoreManager>(ball, score);
 
 	while (window.isOpen())
 	{
