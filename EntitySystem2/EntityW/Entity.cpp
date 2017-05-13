@@ -43,9 +43,9 @@ namespace EntityW {
 	{
 		componentList.set(componentId);
 
-		if (component.is<ComponentSp>())
+		if (component.is<Component>())
 		{
-			auto comp = component.as<ComponentSp>();
+			auto comp = std::shared_ptr<Component>(&component.as<Component>()); // this sucks
 			components[componentId] = comp;
 			if (commited) 
 			{

@@ -142,7 +142,8 @@ function onScoreCollision(event)
 		print(paddleTransform)
 		relativePosition = Vector2.new(glm.normalize(paddleTransform.position).x * (-1), 0.75)
 		print(relativePosition)
-		ball:attach(Components.Attach, AttachComponent.new(paddleTransform, relativePosition))
+		attach = AttachComponent.new(paddleTransform, relativePosition)
+		ball:attach(Components.Attach, attach)
 		
 	end
 end

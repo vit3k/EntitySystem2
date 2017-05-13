@@ -167,6 +167,7 @@
     <ClCompile Include="MovementSystem.cpp" />
     <ClCompile Include="RenderSystem.cpp" />
     <ClCompile Include="ScoreManager.cpp" />
+    <ClCompile Include="ScriptManager.cpp" />
     <ClCompile Include="TextRenderingSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -180,6 +181,7 @@
     <ClInclude Include="GameState.h" />
     <ClInclude Include="PhysicsSystem.h" />
     <ClInclude Include="ScoreManager.h" />
+    <ClInclude Include="ScriptManager.h" />
     <ClInclude Include="sol.hpp" />
     <ClInclude Include="Vector2.h" />
     <ClInclude Include="Logger.h" />

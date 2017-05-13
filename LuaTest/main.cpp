@@ -4,91 +4,50 @@
 #include <map>
 #include <windows.h>
 
-typedef int TypeId;
-
-template<typename TBase>
-class ClassTypeId {
+class Base {
 public:
+	std::string test;
+	Base(std::string test) : test(test) {}
+};
 
-	template<typename T>
-	static TypeId GetTypeId()
+class Derived1 : public Base {
+public:
+	Derived1() : Base("derived1") {}
+};
+
+class Derived2 : public Base {
+public:
+	std::shared_ptr<Derived1> derived1;
+	Derived2(std::shared_ptr<Derived1> derived1) : derived1(derived1), Base("derived2") {}
+};
+
+void func(sol::object obj)
+{
+	if (obj.is<Base>())
 	{
-		static TypeId id = m_nextTypeId++;
-		return id;
+		auto base = obj.as<Base>();
+		std::cout << base.test << std::endl;
 	}
-
-	static TypeId GetScriptTypeId() {
-		return m_nextTypeId++;
-	}
-private:
-
-	static TypeId m_nextTypeId;
-};
-
-template <typename TBase>
-TypeId ClassTypeId<TBase>::m_nextTypeId = 0;
-
-class Test {
-public:
-	int id;
-};
-
-class Derived1 : public Test {
-public:
-	Derived1(): Test() {
-		id = ClassTypeId<Test>::GetScriptTypeId();
-	}
-};
-
-class Derived2 : public Test {
-
-};
-
-std::map<TypeId, std::shared_ptr<Test>> tests;
-/*
-std::shared_ptr<Test> createTest(int i)
-{
-	auto test = std::make_shared<Test>(i);
-	tests[i] = test;
-	return test;
-}
-
-*/
-
-void add(sol::object test)
-{
-	auto test2 = test.as<Test>();
-}
-
-TypeId registerComponent()
-{
-	return ClassTypeId<Test>::GetScriptTypeId();
-}
-
-std::shared_ptr<Test> get(TypeId id)
-{
-	return tests[id];
 }
 int main() {
 
-	std::cout << "Derived2: " << ClassTypeId<Test>::GetTypeId<Derived2>() << std::endl;
 
 	sol::state lua;
+
 	lua.open_libraries(sol::lib::base);
-	lua.script("print('bark bark bark!')");
 
-	lua.new_usertype<Derived1>("Test",
-		sol::constructors<Derived1()>(),
-		"id", &Derived1::id,
-		sol::base_classes, sol::bases<Test>()
+	lua.new_usertype<Base>("Base",
+		sol::constructors<Base(std::string)>()
 		);
-		
-	lua["add"] = add;
-	lua["get"] = get;
-	lua["registerComponent"] = registerComponent;
 
-	//lua["createTest"] = createTest;
+	lua.new_usertype<Derived1>("Derived1",
+		sol::base_classes, sol::bases<Base>());
 
+	lua.new_usertype<Derived2>("Derived2",
+		sol::constructors<Derived2(std::shared_ptr<Derived1>)>(),
+		sol::base_classes, sol::bases<Base>());
+
+	lua["func"] = func;
 	lua.script_file("test.lua");
 
 	return 0;
