@@ -36,4 +36,18 @@ namespace EntityW {
 		}
 	}
 	
+	void ScriptSystem::Process(EntityW::Time deltaTime)
+	{
+		if (script["process"] != nullptr)
+		{
+			script["process"](deltaTime);
+		}
+		else
+		{
+			for (auto entity : entities)
+			{
+				script["processEntity"](entity, deltaTime);
+			}
+		}
+	}
 }

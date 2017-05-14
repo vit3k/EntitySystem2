@@ -34,7 +34,7 @@ int main()
 
 	std::shared_ptr<RenderSystem> renderSystem(new RenderSystem(&window));
 	std::shared_ptr<TextRenderingSystem> textRenderingSystem(new TextRenderingSystem(&window));
-	auto movementSystem = std::make_shared<MovementSystem>();
+	//auto movementSystem = std::make_shared<MovementSystem>();
 	auto inputSystem = std::make_shared<InputSystem>();
 	auto collisionSystem = std::make_shared<CollisionSystem>();
 	auto physicsSystem = std::make_shared<PhysicsSystem>();
@@ -71,7 +71,8 @@ int main()
 
 		// logic systems
 		inputSystem->Process(delta);
-		movementSystem->Process(delta);
+		//movementSystem->Process(delta);
+		scriptManager.process(delta);
 		attachSystem->Process(delta);
 		collisionSystem->Process(delta);
 

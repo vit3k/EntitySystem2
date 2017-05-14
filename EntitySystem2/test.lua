@@ -1,3 +1,9 @@
+movementSystem = registerSystem({
+	processEntity = function(self, entity, deltaTime)
+		--print(deltaTime)
+	end
+}, Components.Transform, Components.Velocity)
+
 scoreText = createEntity({
 	transform = Vector2.new(-9.5, -7.0),
 	text = "0 - 0"
@@ -149,3 +155,5 @@ function onScoreCollision(event)
 end
 
 subscribe(Events.Collision, onScoreCollision)
+
+

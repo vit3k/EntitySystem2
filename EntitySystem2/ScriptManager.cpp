@@ -241,7 +241,10 @@ void ScriptManager::init()
 	lua.set_function("createEntity", &ScriptManager::createEntity, this);
 	lua.set_function("subscribe", &ScriptManager::subscribe, this);
 	lua.set_function("registerComponent", &ScriptManager::registerComponent, this);
-
+	lua.set_function("registerSystem", &ScriptManager::registerSystem, this);
+	lua.new_usertype<EntityW::ScriptSystem>("System",
+		sol::constructors<EntityW::ScriptSystem(sol::table, sol::variadic_args)>()
+	);
 	
 }
 
@@ -253,4 +256,19 @@ void ScriptManager::run(std::string name)
 Vector2 ScriptManager::glmNormalize(Vector2 vec)
 {
 	return glm::normalize(vec);
+}
+
+std::shared_ptr<EntityW::ScriptSystem> ScriptManager::registerSystem(sol::table script, sol::variadic_args args)
+{
+	auto system = std::make_shared<EntityW::ScriptSystem>(script, args);
+	systems.push_back(system);
+	return system;
+}
+
+void ScriptManager::process(EntityW::Time deltaTime)
+{
+	for (auto system : systems)
+	{
+		system->Process(deltaTime);
+	}
 }

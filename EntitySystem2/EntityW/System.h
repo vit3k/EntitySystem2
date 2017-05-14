@@ -62,13 +62,26 @@ namespace EntityW
 	TypeId SystemTypeId()
 	{
 		return ClassTypeId<System>::GetTypeId<T>();
-	}
+	};
 
 	class ScriptSystem : public BaseSystem
 	{
 		sol::table script;
 	public:
-		ScriptSystem(sol::table script) : script(script) {};
+		ComponentList createComponentList(sol::variadic_args args)
+		{
+			ComponentList components;
+			for (auto arg : args)
+			{
+				components.set(arg.get<TypeId>());
+			}
+			return components;
+		}
+		ScriptSystem(sol::table script, sol::variadic_args args) : script(script), BaseSystem(createComponentList(args))
+		{
+		};
+
+		virtual void Process(EntityW::Time deltaTime);
 	};
 }
 
