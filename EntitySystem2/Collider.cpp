@@ -8,8 +8,8 @@ Collision Collider::sat(EntityW::EntitySp entity1, EntityW::EntitySp entity2, st
 	auto collision1 = entity1->get<CollisionComponent>();
 	auto collision2 = entity2->get<CollisionComponent>();
 
-	auto collisionShape1 = (RectCollisionShape*)collision1->shape;
-	auto collisionShape2 = (RectCollisionShape*)collision2->shape;
+	auto collisionShape1 = std::static_pointer_cast<RectCollisionShape>(collision1->shape);
+	auto collisionShape2 = std::static_pointer_cast<RectCollisionShape>(collision2->shape);
 
 	Collision collision;
 	collision.occured = true;
@@ -55,8 +55,8 @@ Collision BoxCircleCollider::collide(EntityW::EntitySp entity1, EntityW::EntityS
 	auto collision1 = entity1->get<CollisionComponent>();
 	auto collision2 = entity2->get<CollisionComponent>();
 
-	auto collisionShape1 = (RectCollisionShape*) collision1->shape;
-	auto collisionShape2 = (CircleCollisionShape*)collision2->shape;
+	auto collisionShape1 = std::static_pointer_cast<RectCollisionShape>( collision1->shape);
+	auto collisionShape2 = std::static_pointer_cast<CircleCollisionShape>(collision2->shape);
 
 	Vector2 circleCenter = transform2->position + collisionShape2->center();
 	std::vector<Vector2> vertices = collisionShape1->calculateVertices(transform1);

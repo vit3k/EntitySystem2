@@ -1,4 +1,5 @@
 #include "System.h"
+#include "../Components.h"
 
 namespace EntityW {
 	void BaseSystem::ProcessEntity(EntitySp entity, Time deltaTime)
@@ -20,12 +21,12 @@ namespace EntityW {
 	void BaseSystem::OnComponentAttached(EventSp event) {
 		auto entityCreatedEvent = std::dynamic_pointer_cast<ComponentAttachedEvent>(event);
 		auto entity = entityCreatedEvent->entity;
-		if (entities.find(entity->id) == entities.end()) {
-			if (entity->hasComponents(components)) {
-				logger.log(getName()+": entity added");
-				entities[entity->id] = entity;
-			}
+		
+		if (entity->hasComponents(components)) {
+			logger.log(getName()+": entity added");
+			entities[entity->id] = entity;
 		}
+		
 	}
 
 	void BaseSystem::Process(Time deltaTime)
@@ -38,15 +39,15 @@ namespace EntityW {
 	
 	void ScriptSystem::Process(EntityW::Time deltaTime)
 	{
-		if (script["process"] != nullptr)
+		if (script["process"].valid())
 		{
 			script["process"](deltaTime);
 		}
-		else
+		else if (script["processEntity"].valid())
 		{
 			for (auto entity : entities)
 			{
-				script["processEntity"](entity, deltaTime);
+				script["processEntity"](this, entity.second, deltaTime);
 			}
 		}
 	}

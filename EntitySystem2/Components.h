@@ -6,6 +6,10 @@
 #include "EntityW\Entity.h"
 #include "Collider.h"
 
+enum ShapeType {
+	Rectangle, Circle
+};
+
 class TransformComponent : public EntityW::Component {
 public:
 	Vector2 position;
@@ -31,17 +35,14 @@ public:
 
 class RenderComponent : public EntityW::Component {
 public:
-	sf::Shape* shape;
-	RenderComponent(sf::Shape* shape) : shape(shape) {};
+	std::shared_ptr<sf::Shape> shape;
+	RenderComponent(std::shared_ptr<sf::Shape> shape) : shape(shape) {};
 };
 
 class TextComponent : public EntityW::Component {
 public:
 	std::string text;
 	TextComponent(std::string text) : text(text) {};
-};
-enum CollisionShapeType {
-	Circle, Rect
 };
 
 struct Projection {
@@ -55,7 +56,7 @@ struct Projection {
 class CollisionShape
 {
 public:
-	virtual CollisionShapeType getType() = 0;
+	virtual ShapeType getType() = 0;
 	virtual Vector2 center() = 0;
 	virtual Projection project(TransformComponentSp transform, Vector2 axis) = 0;
 };
@@ -64,7 +65,7 @@ class RectCollisionShape : public CollisionShape
 {
 public:
 	float width, height;
-	virtual CollisionShapeType getType() { return Rect; }
+	virtual ShapeType getType() { return Rectangle; }
 	RectCollisionShape(float width, float height) : width(width), height(height) {}
 	std::vector<Vector2> calculateVertices(TransformComponentSp transform) {
 		std::vector<Vector2> vertices = { Vector2(transform->position.x, transform->position.y),
@@ -99,13 +100,18 @@ public:
 		}
 		return Projection(min, max);
 	}
+
+	~RectCollisionShape()
+	{
+		std::cout << "RectCollisionShape destroyed" << std::endl;
+	}
 };
 
 class CircleCollisionShape : public CollisionShape
 {
 public:
 	float radius;
-	virtual CollisionShapeType getType() { return Circle; }
+	virtual ShapeType getType() { return Circle; }
 	CircleCollisionShape(float radius) : radius(radius) {}
 	virtual Vector2 center() {
 		return Vector2(radius, radius);
@@ -119,8 +125,9 @@ public:
 class CollisionComponent : public EntityW::Component {
 public:
 	Collision collision;
-	CollisionShape* shape;
-	CollisionComponent(CollisionShape* shape) : shape(shape) {};
+	std::shared_ptr<CollisionShape> shape;
+	CollisionComponent(std::shared_ptr<CollisionShape> shape) : shape(shape) {}
+	
 };
 
 class PhysicsComponent : public EntityW::Component {

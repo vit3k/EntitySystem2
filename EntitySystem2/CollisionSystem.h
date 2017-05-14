@@ -6,7 +6,7 @@
 #include "Logger.h"
 #include "EntityW\Entity.h"
 
-typedef std::pair<CollisionShapeType, CollisionShapeType> ColliderType;
+typedef std::pair<ShapeType, ShapeType> ColliderType;
 
 class CollisionSystem : public EntityW::System<TransformComponent, CollisionComponent>
 {

@@ -1,54 +1,53 @@
 #include <iostream>
 #include "sol.hpp"
 #include <memory>
-#include <map>
-#include <windows.h>
 
-class Base {
+class SuperData{
+	
 public:
-	std::string test;
-	Base(std::string test) : test(test) {}
-};
-
-class Derived1 : public Base {
-public:
-	Derived1() : Base("derived1") {}
-};
-
-class Derived2 : public Base {
-public:
-	std::shared_ptr<Derived1> derived1;
-	Derived2(std::shared_ptr<Derived1> derived1) : derived1(derived1), Base("derived2") {}
-};
-
-void func(sol::object obj)
-{
-	if (obj.is<Base>())
+	int test = 0;
+	~SuperData()
 	{
-		auto base = obj.as<Base>();
-		std::cout << base.test << std::endl;
+		std::cout << "SuperData destroyed" << std::endl;
 	}
+};
+
+class Component{
+public:
+	std::shared_ptr<SuperData> superData;
+	SuperData superData2;
+	Component(std::shared_ptr<SuperData> superData, SuperData superData2) : superData(superData), superData2(superData2) {}
+};
+
+std::shared_ptr<Component> component;
+
+std::shared_ptr<Component> create(SuperData superData, SuperData superData2)
+{
+	component = std::make_shared<Component>(std::shared_ptr<SuperData>(&superData), superData2);
+	return component;
 }
+
 int main() {
-
-
 	sol::state lua;
-
 	lua.open_libraries(sol::lib::base);
 
-	lua.new_usertype<Base>("Base",
-		sol::constructors<Base(std::string)>()
-		);
+	lua.new_usertype<SuperData>("SuperData",
+		"test", &SuperData::test
+	);
 
-	lua.new_usertype<Derived1>("Derived1",
-		sol::base_classes, sol::bases<Base>());
+	lua.new_usertype<Component>("Component",
+		sol::constructors<Component(std::shared_ptr<SuperData>, SuperData superData2)>(),
+		"superData", &Component::superData,
+		"superData2", &Component::superData2
+	);
 
-	lua.new_usertype<Derived2>("Derived2",
-		sol::constructors<Derived2(std::shared_ptr<Derived1>)>(),
-		sol::base_classes, sol::bases<Base>());
-
-	lua["func"] = func;
+	lua["create"] = create;
 	lua.script_file("test.lua");
-
+	
+	while (1)
+	{
+		lua["test"](component);
+		std::cout << "C++: " << component->superData->test << " " << component->superData2.test << std::endl;
+	}
 	return 0;
 }

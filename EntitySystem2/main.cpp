@@ -6,27 +6,15 @@
 #include "RenderSystem.h"
 #include "TextRenderingSystem.h"
 #include "InputController.h"
-#include "MovementSystem.h"
 #include "InputSystem.h"
 #include "EntityW\EventDispatcher.h"
 #include "CollisionSystem.h"
 #include "PhysicsSystem.h"
-#include "ScoreManager.h"
 #include "AttachSystem.h"
 #include "sol.hpp"
 #include <algorithm>
 #include "EntityW\ClassTypeId.h"
 #include "ScriptManager.h"
-
-/*
-std::vector < std::shared_ptr<EntityW::ScriptSystem>> scriptSystems;
-
-void registerSystem(std::string name, sol::table script)
-{
-	auto system = std::make_shared<EntityW::ScriptSystem>(script);
-	scriptSystems.push_back(system);
-}
-*/
 
 int main()
 {
@@ -47,8 +35,8 @@ int main()
 
 	ScriptManager scriptManager;
 	scriptManager.init();
-	scriptManager.run("test.lua");
-
+	scriptManager.run("pong.lua");
+	sf::Time lastScriptUpdate = timer.getElapsedTime();
 	while (window.isOpen())
 	{
 		sf::Event event;
@@ -66,16 +54,26 @@ int main()
 		// low level systems
 		inputController.process();
 
-		//event bus
+		//event bus before scripts
 		EntityW::EventDispatcher::get().process();
 
 		// logic systems
 		inputSystem->Process(delta);
-		//movementSystem->Process(delta);
+		// script could be updated less often but somehow this is not working with collision and physics right now
+		//if ((currentMillis - lastScriptUpdate).asMilliseconds() > (1000 / 100))
+		//{
+			//EntityW::Time scriptDelta((currentMillis - lastScriptUpdate).asMicroseconds());
+			//scriptManager.process(scriptDelta);
+			//lastScriptUpdate = currentMillis;
+		//}
+		// systems from lua
 		scriptManager.process(delta);
-		attachSystem->Process(delta);
-		collisionSystem->Process(delta);
 
+		// event bus after scripts
+		EntityW::EventDispatcher::get().process();
+
+		//attachSystem->Process(delta);
+		collisionSystem->Process(delta);
 		physicsSystem->Process(delta);
 
 		//rendering pipeline

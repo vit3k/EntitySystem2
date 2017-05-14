@@ -38,7 +38,8 @@ EntityW::EntitySp ScriptManager::createEntity(sol::table entityData)
 		auto componentName = key.as<std::string>();
 		if (componentName == "transform")
 		{
-			entity->attach<TransformComponent>(value.as<Vector2>());
+			auto position = value.as<sol::table>();
+			entity->attach<TransformComponent>(Vector2(position["x"], position["y"]));
 		}
 		else if (componentName == "text")
 		{
@@ -46,13 +47,25 @@ EntityW::EntitySp ScriptManager::createEntity(sol::table entityData)
 		}
 		else if (componentName == "render")
 		{
-			auto shape = value.as<sol::table>().get<sf::Shape*>("shape");
-			entity->attach<RenderComponent>(shape);
+			auto shapeTable = value.as<sol::table>()["shape"];
+			if (shapeTable["type"] == Rectangle)
+			{
+				auto shape = std::make_shared<sf::RectangleShape>(sf::Vector2f(shapeTable["width"], shapeTable["height"]));
+				shape->setFillColor(shapeTable["color"]);
+				entity->attach<RenderComponent>(std::static_pointer_cast<sf::Shape>(shape));
+			}
+			if (shapeTable["type"] == Circle)
+			{
+				float radius = shapeTable["radius"];
+				auto shape = std::make_shared<sf::CircleShape>(radius);
+				shape->setFillColor(shapeTable["color"]);
+				entity->attach<RenderComponent>(std::static_pointer_cast<sf::Shape>(shape));
+			}
 		}
 		else if (componentName == "velocity")
 		{
 			auto table = value.as<sol::table>();
-			entity->attach<VelocityComponent>(table.get<Vector2>("velocity"), table.get<float>("bounciness"));
+			entity->attach<VelocityComponent>(Vector2(table["velocity"]["x"], table["velocity"]["y"]), table.get<float>("bounciness"));
 		}
 		else if (componentName == "input")
 		{
@@ -60,23 +73,33 @@ EntityW::EntitySp ScriptManager::createEntity(sol::table entityData)
 		}
 		else if (componentName == "collision")
 		{
-			auto table = value.as<sol::table>();
-			entity->attach<CollisionComponent>(table.get<CollisionShape*>("shape"));
+			auto shapeTable = value.as<sol::table>()["shape"];
+			if (shapeTable["type"] == Rectangle)
+			{
+				auto shape = std::make_shared<RectCollisionShape>(shapeTable["width"], shapeTable["height"]);
+				entity->attach<CollisionComponent>(std::static_pointer_cast<CollisionShape>(shape));
+			}
+			if (shapeTable["type"] == Circle)
+			{
+				float radius = shapeTable["radius"];
+				auto shape = std::make_shared<CircleCollisionShape>(radius);
+				entity->attach<CollisionComponent>(std::static_pointer_cast<CollisionShape>(shape));
+			}
 		}
 		else if (componentName == "physics")
 		{
 			auto table = value.as<sol::table>();
-			entity->attach<PhysicsComponent>(table.get<float>("bounciness"), table.get<float>("mass"), table.get<Vector2>("constraints"));
+			entity->attach<PhysicsComponent>(table["bounciness"], table["mass"], Vector2(table["constraints"]["x"], table["constraints"]["y"]));
 		}
 		else if (componentName == "scoringSurface")
 		{
 			auto table = value.as<sol::table>();
-			entity->attach<ScoringSurfaceComponent>(table.get<int>("playerId"), table.get<EntityW::EntitySp>("paddle"));
+			entity->attach<ScoringSurfaceComponent>(table["playerId"], table.get<EntityW::EntitySp>("paddle"));
 		}
 		else if (componentName == "attach")
 		{
 			auto table = value.as<sol::table>();
-			entity->attach<AttachComponent>(table.get<TransformComponentSp>("parent"), table.get<Vector2>("relative"));
+			entity->attach<AttachComponent>(table.get<TransformComponentSp>("parent"), Vector2(table["relative"]["x"], table["relative"]["y"]));
 		}
 		else
 		{
@@ -89,11 +112,8 @@ EntityW::EntitySp ScriptManager::createEntity(sol::table entityData)
 
 void ScriptManager::init()
 {
-	
-
 	lua.open_libraries(sol::lib::base);
-	lua.script("print('bark bark bark!')");
-
+	lua.script("print('LUA online')");
 	lua.new_usertype<Vector2>("Vector2",
 		sol::constructors<Vector2(double, double)>(),
 		"x", &Vector2::x,
@@ -170,7 +190,7 @@ void ScriptManager::init()
 		);
 
 	lua.new_usertype<RenderComponent>("RenderComponent",
-		sol::constructors<RenderComponent(sf::Shape*)>(),
+		sol::constructors<RenderComponent(std::shared_ptr<sf::Shape>)>(),
 		sol::base_classes, sol::bases<EntityW::Component>()
 
 		);
@@ -187,9 +207,15 @@ void ScriptManager::init()
 		sol::base_classes, sol::bases<EntityW::Component>()
 		);
 
-	lua.new_usertype<CollisionShape>("CollisionShape");
+	lua.new_usertype<CollisionShape>("CollisionShape",
+		"width", &RectCollisionShape::width,
+		"height", &RectCollisionShape::height,
+		"center", &CircleCollisionShape::center);
+
 	lua.new_usertype<RectCollisionShape>("RectCollisionShape",
 		sol::constructors<RectCollisionShape(float, float)>(),
+		"width", &RectCollisionShape::width,
+		"height", &RectCollisionShape::height,
 		sol::base_classes, sol::bases<CollisionShape>()
 		);
 
@@ -199,7 +225,7 @@ void ScriptManager::init()
 		);
 
 	lua.new_usertype<CollisionComponent>("CollisionComponent",
-		sol::constructors<CollisionComponent(CollisionShape*)>(),
+		sol::constructors<CollisionComponent(std::shared_ptr<CollisionShape>)>(),
 		"shape", &CollisionComponent::shape,
 		sol::base_classes, sol::bases<EntityW::Component>()
 		);
@@ -218,7 +244,10 @@ void ScriptManager::init()
 		"Red", sf::Color::Red,
 		"White", sf::Color::White
 	);
-
+	lua.new_enum("Shapes",
+		"Rectangle", ShapeType::Rectangle,
+		"Circle", ShapeType::Circle
+	);
 	lua["Events"] = lua.create_table_with(
 		"Collision", EntityW::EventTypeId<CollisionEvent>()
 	);
@@ -235,6 +264,9 @@ void ScriptManager::init()
 		"Velocity", EntityW::ComponentTypeId<VelocityComponent>()
 	);
 
+	lua.new_usertype<EntityW::Time>("Time",
+			"asSeconds", &EntityW::Time::asSeconds
+		);
 	sol::table glm = lua.create_named_table("glm");
 	glm.set_function("normalize", &ScriptManager::glmNormalize, this);
 
@@ -245,7 +277,6 @@ void ScriptManager::init()
 	lua.new_usertype<EntityW::ScriptSystem>("System",
 		sol::constructors<EntityW::ScriptSystem(sol::table, sol::variadic_args)>()
 	);
-	
 }
 
 void ScriptManager::run(std::string name)

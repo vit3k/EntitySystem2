@@ -27,6 +27,18 @@ namespace EntityW {
 			{
 				return sol::make_object(lua, std::static_pointer_cast<TransformComponent>(components[component]));
 			}
+			else if (component == ComponentTypeId <CollisionComponent>())
+			{
+				return sol::make_object(lua, std::static_pointer_cast<CollisionComponent>(components[component]));
+			}
+			else if (component == ComponentTypeId <VelocityComponent>())
+			{
+				return sol::make_object(lua, std::static_pointer_cast<VelocityComponent>(components[component]));
+			}
+			else if (component == ComponentTypeId <AttachComponent>())
+			{
+				return sol::make_object(lua, std::static_pointer_cast<AttachComponent>(components[component]));
+			}
 		}
 		else 
 		{

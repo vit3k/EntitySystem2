@@ -1,5 +1,5 @@
-derived1 = Derived1.new()
+function test(cos)
+	print(cos.superData.test)
+end
 
---derived2 = Derived2.new(derived1)
-
---func(derived2)
+component = create(SuperData.new(), SuperData.new())

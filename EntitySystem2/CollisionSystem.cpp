@@ -3,8 +3,8 @@
 #include "EntityW\EventDispatcher.h"
 
 CollisionSystem::CollisionSystem() {
-	colliders[ColliderType(Rect, Rect)] = new BoxBoxCollider();
-	colliders[ColliderType(Rect, Circle)] = new BoxCircleCollider();
+	colliders[ColliderType(Rectangle, Rectangle)] = new BoxBoxCollider();
+	colliders[ColliderType(Rectangle, Circle)] = new BoxCircleCollider();
 }
 
 CollisionSystem::~CollisionSystem() {
@@ -30,7 +30,9 @@ void CollisionSystem::Process(EntityW::Time delta)
 			}
 			auto collisionComponent2 = entity2->get<CollisionComponent>();
 
-			Collider* collider = colliders[ColliderType(collisionComponent1->shape->getType(), collisionComponent2->shape->getType())];
+			auto type1 = collisionComponent1->shape->getType();
+			auto type2 = collisionComponent2->shape->getType();
+			Collider* collider = colliders[ColliderType(type1, type2)];
 
 			Collision collision;
 
@@ -40,7 +42,7 @@ void CollisionSystem::Process(EntityW::Time delta)
 			}
 			else 
 			{
-				collider = colliders[std::pair<CollisionShapeType, CollisionShapeType>(collisionComponent2->shape->getType(), collisionComponent1->shape->getType())];
+				collider = colliders[std::pair<ShapeType, ShapeType>(collisionComponent2->shape->getType(), collisionComponent1->shape->getType())];
 
 				if (collider != NULL) {
 					collision = collider->collide(entity2, entity1);

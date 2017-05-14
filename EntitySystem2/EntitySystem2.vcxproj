@@ -108,6 +108,7 @@
       <SDLCheck>true</SDLCheck>
       <AdditionalIncludeDirectories>../Lua;c:\libs\glm;C:\libs\SFML-2.4.2\include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp14</LanguageStandard>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -164,9 +165,7 @@
     <ClCompile Include="InputSystem.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="EntityW\System.cpp" />
-    <ClCompile Include="MovementSystem.cpp" />
     <ClCompile Include="RenderSystem.cpp" />
-    <ClCompile Include="ScoreManager.cpp" />
     <ClCompile Include="ScriptManager.cpp" />
     <ClCompile Include="TextRenderingSystem.cpp" />
   </ItemGroup>
@@ -180,7 +179,6 @@
     <ClInclude Include="EntityW\Entity.h" />
     <ClInclude Include="GameState.h" />
     <ClInclude Include="PhysicsSystem.h" />
-    <ClInclude Include="ScoreManager.h" />
     <ClInclude Include="ScriptManager.h" />
     <ClInclude Include="sol.hpp" />
     <ClInclude Include="Vector2.h" />
@@ -192,12 +190,11 @@
     <ClInclude Include="EntityW\Fastdelegate.h" />
     <ClInclude Include="InputController.h" />
     <ClInclude Include="InputSystem.h" />
-    <ClInclude Include="MovementSystem.h" />
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="TextRenderingSystem.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="test.lua">
+    <None Include="pong.lua">
       <SubType>Designer</SubType>
     </None>
   </ItemGroup>
