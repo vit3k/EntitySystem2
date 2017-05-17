@@ -1,7 +1,14 @@
 local scoreManager = require 'scripts/scoreManager'
+local attachSystem = import('attachSystem')
+local movementSystem = import('movementSystem')
+local inputSystem = import('inputSystem')
 
 function init()
+	-- clearWorld() needs to be added when changing states will be available
 	Components.ScoringSurface = registerComponent("scoringSurface")
+	inputSystem.init()
+	movementSystem.init()
+	attachSystem.init()
 	--Score display 
 	scoreText = createEntity({
 		transform = { x = -9.5, y = -7.0 },
