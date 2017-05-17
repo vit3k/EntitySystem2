@@ -77,8 +77,10 @@ namespace EntityW
 			}
 			return components;
 		}
+		virtual void OnScriptComponentAttached(EventSp event);
 		ScriptSystem(sol::table script, sol::variadic_args args) : script(script), BaseSystem(createComponentList(args))
 		{
+			EventDispatcher::get().subscribe<ScriptComponentAttachedEvent>(EntityW::EventListenerDelegate(this, &ScriptSystem::OnScriptComponentAttached));
 		};
 
 		virtual void Process(EntityW::Time deltaTime);

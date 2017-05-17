@@ -98,9 +98,6 @@
     <ClInclude Include="PhysicsSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GameState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="EntityW\EventDispatcher.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -121,6 +118,11 @@
     <Font Include="cour.ttf" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="pong.lua" />
+    <None Include="scripts\pong.lua" />
+    <None Include="scripts\scoreManager.lua" />
+    <None Include="scripts\attachSystem.lua" />
+    <None Include="scripts\table.lua" />
+    <None Include="scripts\movementSystem.lua" />
+    <None Include="scripts\inputSystem.lua" />
   </ItemGroup>
 </Project>

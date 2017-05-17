@@ -23,5 +23,7 @@ public:
 	void run(std::string name);
 	sol::table registerSystem(sol::table script, sol::variadic_args args);
 	void process(EntityW::Time deltaTime);
+	sol::object importModule(std::string modulePath);
+	void clearWorld();
 };
 

@@ -30,7 +30,10 @@ int main()
 
 	ScriptManager scriptManager;
 	scriptManager.init();
-	scriptManager.run("pong.lua");
+	scriptManager.run("scripts/pong.lua");
+
+	EntityW::EventDispatcher::get().emitNow<StartedEvent>();
+
 	sf::Time lastScriptUpdate = timer.getElapsedTime();
 	while (window.isOpen())
 	{

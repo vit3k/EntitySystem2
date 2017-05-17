@@ -74,10 +74,10 @@ EntityW::EntitySp ScriptManager::createEntity(sol::table entityData)
 			auto table = value.as<sol::table>();
 			entity->attach<VelocityComponent>(Vector2(table["velocity"]["x"], table["velocity"]["y"]), table.get<float>("bounciness"));
 		}
-		else if (componentName == "input")
+		/*else if (componentName == "input")
 		{
 			entity->attach<InputComponent>(value.as<int>());
-		}
+		}*/
 		else if (componentName == "collision")
 		{
 			auto shapeTable = value.as<sol::table>()["shape"];
@@ -98,16 +98,16 @@ EntityW::EntitySp ScriptManager::createEntity(sol::table entityData)
 			auto table = value.as<sol::table>();
 			entity->attach<PhysicsComponent>(table["bounciness"], table["mass"], Vector2(table["constraints"]["x"], table["constraints"]["y"]));
 		}
-		else if (componentName == "scoringSurface")
+		/*else if (componentName == "scoringSurface")
 		{
 			auto table = value.as<sol::table>();
 			entity->attach<ScoringSurfaceComponent>(table["playerId"], table.get<EntityW::EntitySp>("paddle"));
-		}
-		else if (componentName == "attach")
+		}*/
+		/*else if (componentName == "attach")
 		{
 			auto table = value.as<sol::table>();
 			entity->attach<AttachComponent>(table.get<TransformComponentSp>("parent"), Vector2(table["relative"]["x"], table["relative"]["y"]));
-		}
+		}*/
 		else
 		{
 			entity->scriptAttach(scriptComponentsMap[componentName], value.as<sol::object>());
@@ -119,7 +119,7 @@ EntityW::EntitySp ScriptManager::createEntity(sol::table entityData)
 
 void ScriptManager::init()
 {
-	lua.open_libraries(sol::lib::base);
+	lua.open_libraries(sol::lib::base, sol::lib::package);
 	lua.script("print('LUA online')");
 	lua.new_usertype<Vector2>("Vector2",
 		sol::constructors<Vector2(double, double)>(),
@@ -163,20 +163,20 @@ void ScriptManager::init()
 		"collision", &CollisionEvent::collision
 		);
 
-	lua.new_usertype<ScoringSurfaceComponent>("ScoringSurfaceComponent",
+	/*lua.new_usertype<ScoringSurfaceComponent>("ScoringSurfaceComponent",
 		sol::constructors < ScoringSurfaceComponent(int, EntityW::EntitySp)>(),
 		"paddle", &ScoringSurfaceComponent::paddle,
 		"playerId", &ScoringSurfaceComponent::playerId,
 		sol::base_classes, sol::bases<EntityW::Component>()
 		);
-
-	lua.new_usertype<AttachComponent>("AttachComponent",
+		*/
+	/*lua.new_usertype<AttachComponent>("AttachComponent",
 		sol::constructors<AttachComponent(TransformComponentSp, Vector2)>(),
 		"parentTransform", &AttachComponent::parentTransform,
 		"relativePosition", &AttachComponent::relativePosition,
 		sol::base_classes, sol::bases<EntityW::Component>()
 		);
-
+		*/
 	lua.new_simple_usertype<sf::Vector2f>("Vector2f",
 		sol::constructors < sf::Vector2f(float, float) >()
 		);
@@ -202,19 +202,19 @@ void ScriptManager::init()
 
 		);
 
-	lua.new_usertype<InputComponent>("InputComponent",
+	/*lua.new_usertype<InputComponent>("InputComponent",
 		sol::constructors<InputComponent(int)>(),
 		"controller", &InputComponent::controller,
 		sol::base_classes, sol::bases<EntityW::Component>()
 		);
-
+		*/
 	lua.new_usertype<VelocityComponent>("VelocityComponent",
 		sol::constructors<VelocityComponent(Vector2, float)>(),
 		"velocity", &VelocityComponent::velocity,
 		"bounciness", &VelocityComponent::bounciness,
 		sol::base_classes, sol::bases<EntityW::Component>()
 		);
-
+		
 	lua.new_usertype<CollisionShape>("CollisionShape",
 		"width", &RectCollisionShape::width,
 		"height", &RectCollisionShape::height,
@@ -262,18 +262,18 @@ void ScriptManager::init()
 	lua.new_enum("Events",
 		"Collision", EntityW::EventTypeId<CollisionEvent>(),
 		"MoveUp", EntityW::EventTypeId<MoveUpEvent>(),
-		"MoveDown", EntityW::EventTypeId<MoveDownEvent>()
+		"MoveDown", EntityW::EventTypeId<MoveDownEvent>(),
+		"Started", EntityW::EventTypeId<StartedEvent>()
 	);
 
 	lua["Components"] = lua.create_table_with(
 		"Transform", EntityW::ComponentTypeId<TransformComponent>(),
 		"Text", EntityW::ComponentTypeId<TextComponent>(),
 		"Render", EntityW::ComponentTypeId<RenderComponent>(),
-		"Input", EntityW::ComponentTypeId<InputComponent>(),
+		//"Input", EntityW::ComponentTypeId<InputComponent>(),
 		"Collision", EntityW::ComponentTypeId<CollisionComponent>(),
 		"Physics", EntityW::ComponentTypeId<PhysicsComponent>(),
-		"ScoringSurface", EntityW::ComponentTypeId<ScoringSurfaceComponent>(),
-		"Attach", EntityW::ComponentTypeId<AttachComponent>(),
+		//"ScoringSurface", EntityW::ComponentTypeId<ScoringSurfaceComponent>(),
 		"Velocity", EntityW::ComponentTypeId<VelocityComponent>()
 	);
 
@@ -294,9 +294,13 @@ void ScriptManager::init()
 	lua.set_function("subscribeForObject", sol::resolve<void(EntityW::TypeId, sol::function, sol::table)>(&ScriptManager::subscribe), this);
 	lua.set_function("registerComponent", &ScriptManager::registerComponent, this);
 	lua.set_function("registerSystem", &ScriptManager::registerSystem, this);
+	lua.set_function("import", &ScriptManager::importModule, this);
+
 	lua.new_usertype<EntityW::ScriptSystem>("System",
 		sol::constructors<EntityW::ScriptSystem(sol::table, sol::variadic_args)>()
 	);
+
+	lua.new_simple_usertype<StartedEvent>("StartedEvent");
 
 	lua.new_usertype<MoveUpEvent>("MoveUpEvent",
 		"controller", &MoveUpEvent::controller
@@ -330,4 +334,14 @@ void ScriptManager::process(EntityW::Time deltaTime)
 	{
 		system->Process(deltaTime);
 	}
+}
+
+sol::object ScriptManager::importModule(std::string modulePath)
+{
+	return lua.require_file(modulePath, "scripts/" + modulePath + ".lua", false);
+}
+
+void ScriptManager::clearWorld()
+{
+
 }

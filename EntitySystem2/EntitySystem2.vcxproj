@@ -174,7 +174,6 @@
     <ClInclude Include="EntityW\ClassTypeId.h" />
     <ClInclude Include="EntityW\Component.h" />
     <ClInclude Include="EntityW\Entity.h" />
-    <ClInclude Include="GameState.h" />
     <ClInclude Include="PhysicsSystem.h" />
     <ClInclude Include="ScriptManager.h" />
     <ClInclude Include="sol.hpp" />
@@ -190,9 +189,14 @@
     <ClInclude Include="TextRenderingSystem.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="pong.lua">
+    <None Include="scripts\attachSystem.lua" />
+    <None Include="scripts\inputSystem.lua" />
+    <None Include="scripts\movementSystem.lua" />
+    <None Include="scripts\pong.lua">
       <SubType>Designer</SubType>
     </None>
+    <None Include="scripts\scoreManager.lua" />
+    <None Include="scripts\table.lua" />
   </ItemGroup>
   <ItemGroup>
     <Font Include="cour.ttf" />

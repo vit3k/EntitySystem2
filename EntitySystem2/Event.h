@@ -30,4 +30,7 @@ public:
 	LaunchBallEvent(int controller) : InputEvent(controller) {};
 };
 
+class StartedEvent : public EntityW::Event<StartedEvent>
+{
 
+};

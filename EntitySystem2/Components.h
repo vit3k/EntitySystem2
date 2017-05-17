@@ -26,13 +26,6 @@ public:
 	VelocityComponent(Vector2 velocity, float bounciness) : velocity(velocity), bounciness(bounciness) {}
 };
 
-class InputComponent : public EntityW::Component
-{
-public:
-	int controller;
-	InputComponent(int controller) : controller(controller) {};
-};
-
 class RenderComponent : public EntityW::Component {
 public:
 	std::shared_ptr<sf::Shape> shape;
@@ -145,22 +138,5 @@ public:
 		{
 			invertedMass = 0;
 		}
-	}
-};
-
-class ScoringSurfaceComponent : public EntityW::Component {
-public:
-	int playerId;
-	EntityW::EntitySp paddle;
-	ScoringSurfaceComponent(int playerId, EntityW::EntitySp paddle) : playerId(playerId), paddle(paddle) {}
-};
-
-class AttachComponent : public EntityW::Component {
-public:
-	TransformComponentSp parentTransform;
-	Vector2 relativePosition;
-	AttachComponent(TransformComponentSp parentTransform, Vector2 relativePosition)
-		: parentTransform(parentTransform), relativePosition(relativePosition) {
-
 	}
 };

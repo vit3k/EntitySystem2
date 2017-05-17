@@ -98,7 +98,13 @@ namespace EntityW {
 		ComponentAttachedEvent(EntitySp entity, ComponentSp component) : entity(entity), component(component) {}
 	};
 
+	class ScriptComponentAttachedEvent : public Event<ScriptComponentAttachedEvent> {
+	public:
+		EntitySp entity;
+		sol::table component;
 
+		ScriptComponentAttachedEvent(EntitySp entity, sol::table component) : entity(entity), component(component) {}
+	};
 }
 
 

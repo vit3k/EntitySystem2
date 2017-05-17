@@ -10,7 +10,7 @@ namespace EntityW {
 	void BaseSystem::OnEntityAdded(EventSp event)
 	{
 		auto entityCreatedEvent = std::dynamic_pointer_cast<EntityCreatedEvent>(event);
-		
+
 		auto entity = entityCreatedEvent->entity;
 		if (entity->hasComponents(components)) {
 			logger.log(getName() + ": entity added");
@@ -21,12 +21,12 @@ namespace EntityW {
 	void BaseSystem::OnComponentAttached(EventSp event) {
 		auto entityCreatedEvent = std::dynamic_pointer_cast<ComponentAttachedEvent>(event);
 		auto entity = entityCreatedEvent->entity;
-		
+
 		if (entity->hasComponents(components)) {
-			logger.log(getName()+": entity added");
+			logger.log(getName() + ": entity added");
 			entities[entity->id] = entity;
 		}
-		
+
 	}
 
 	void BaseSystem::Process(Time deltaTime)
@@ -36,7 +36,7 @@ namespace EntityW {
 			ProcessEntity(entity.second, deltaTime);
 		}
 	}
-	
+
 	void ScriptSystem::Process(EntityW::Time deltaTime)
 	{
 		if (script["process"].valid())
@@ -49,6 +49,17 @@ namespace EntityW {
 			{
 				script["processEntity"](script, entity.second, deltaTime);
 			}
+		}
+	}
+
+	void ScriptSystem::OnScriptComponentAttached(EventSp event)
+	{
+		auto componentAttachedEvent = std::dynamic_pointer_cast<ScriptComponentAttachedEvent>(event);
+		auto entity = componentAttachedEvent->entity;
+
+		if (entity->hasComponents(components)) {
+			logger.log(getName() + ": entity added");
+			entities[entity->id] = entity;
 		}
 	}
 }
