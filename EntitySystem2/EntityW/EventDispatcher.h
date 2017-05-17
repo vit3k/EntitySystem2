@@ -52,6 +52,7 @@ namespace EntityW {
 		std::vector<EventSp> queues[2];
 		int currentQueue = 0;
 		EventListenersMap listeners;
+		std::map<TypeId, std::vector<std::pair<sol::table, sol::function>>> scriptListenersWithTable;
 		std::map<TypeId, std::vector<sol::function>> scriptListeners;
 
 		EventDispatcher() {};
@@ -85,6 +86,13 @@ namespace EntityW {
 					listener(e);
 				}
 			}
+			if (scriptListenersWithTable.find(e->getTypeId()) != scriptListenersWithTable.end())
+			{
+				for (auto listener : scriptListenersWithTable[e->getTypeId()])
+				{
+					listener.second(listener.first, e);
+				}
+			}
 		}
 
 		template<class T>
@@ -98,7 +106,8 @@ namespace EntityW {
 			listeners[type].push_back(listener);
 		}
 
-		void scriptSubscribe(TypeId eventName, sol::function listener);
+		void scriptSubscribe(TypeId eventTypeId, sol::function listener, sol::table self);
+		void scriptSubscribe(TypeId eventTypeId, sol::function listener);
 
 		void process();
 	};

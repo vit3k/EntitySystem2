@@ -6,11 +6,9 @@
 #include "RenderSystem.h"
 #include "TextRenderingSystem.h"
 #include "InputController.h"
-#include "InputSystem.h"
 #include "EntityW\EventDispatcher.h"
 #include "CollisionSystem.h"
 #include "PhysicsSystem.h"
-#include "AttachSystem.h"
 #include "sol.hpp"
 #include <algorithm>
 #include "EntityW\ClassTypeId.h"
@@ -22,11 +20,8 @@ int main()
 
 	std::shared_ptr<RenderSystem> renderSystem(new RenderSystem(&window));
 	std::shared_ptr<TextRenderingSystem> textRenderingSystem(new TextRenderingSystem(&window));
-	//auto movementSystem = std::make_shared<MovementSystem>();
-	auto inputSystem = std::make_shared<InputSystem>();
 	auto collisionSystem = std::make_shared<CollisionSystem>();
 	auto physicsSystem = std::make_shared<PhysicsSystem>();
-	auto attachSystem = std::make_shared<AttachSystem>();
 
 	sf::Clock timer;
 	
@@ -57,8 +52,7 @@ int main()
 		//event bus before scripts
 		EntityW::EventDispatcher::get().process();
 
-		// logic systems
-		inputSystem->Process(delta);
+		//inputSystem->Process(delta);
 		// script could be updated less often but somehow this is not working with collision and physics right now
 		//if ((currentMillis - lastScriptUpdate).asMilliseconds() > (1000 / 100))
 		//{

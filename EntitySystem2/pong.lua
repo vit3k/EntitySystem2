@@ -16,14 +16,47 @@ attachSystem = registerSystem({
 	processEntity = function(self, entity, deltaTime)
 		transform = entity:get(Components.Transform)
 		attach = entity:get(Components.Attach)
-		
-		print(attach.parentTransform.position.x)
-		print(attach.relativePosition.x)
 
 		transform.position.x = attach.parentTransform.position.x + attach.relativePosition.x
 		transform.position.y = attach.parentTransform.position.y + attach.relativePosition.y
 	end
 }, Components.Transform, Components.Attach)
+
+inputSystem = registerSystem({
+	state = {
+	},
+	processEntity = function(self, entity, deltaTime)
+		input = entity:get(Components.Input)
+		velocity = entity:get(Components.Velocity)
+		entityState = self.state[input.controller]
+		if entityState ~= nil then
+			if entityState.Up then
+				velocity.velocity.y = -10
+			elseif entityState.Down then
+				velocity.velocity.y = 10
+			else
+				velocity.velocity.y = 0
+			end
+		end
+		self.state[input.controller] = {}
+	end,
+	onMoveUp = function(self, event)
+		if self.state[event.controller] == nil then
+			self.state[event.controller] = {}
+		end
+		self.state[event.controller].Up = true
+	end,
+	onMoveDown = function(self, event)
+		if self.state[event.controller] == nil then
+			self.state[event.controller] = {}
+		end
+		self.state[event.controller].Down = true
+	end
+
+}, Components.Input, Components.Velocity)
+
+subscribeForObject(Events.MoveUp, inputSystem.onMoveUp, inputSystem)
+subscribeForObject(Events.MoveDown, inputSystem.onMoveDown, inputSystem)
 
 --Score display 
 scoreText = createEntity({
@@ -240,6 +273,7 @@ score = {
 --Collision hanlder for scoring surfaces
 --Adds point for player and attach ball to the other
 function onScoreCollision(event)
+	print(event)
 	local scoringSurface
 	if event.entity1:has(Components.ScoringSurface) then
 		scoringSurface = event.entity1
@@ -256,19 +290,14 @@ function onScoreCollision(event)
 		scoreText:get(Components.Text).text = score[1] .. " - " .. score[2]
 
 		paddleTransform = scoring.paddle:get(Components.Transform)
-		print(paddleTransform)
-		relativePosition = Vector2.new(glm.normalize(paddleTransform.position).x * (-1), 0.75)
-		print(relativePosition)
-		attach = AttachComponent.new(paddleTransform, relativePosition)
-		ball:attach(Components.Attach, attach)
+		ball:attach(Components.Attach, {
+			parent = paddleTransform,
+			relative = {
+				x = glm.normalize(paddleTransform.position).x * (-1),
+				y = 0.75
+			}
+		})
 		
 	end
 end
 subscribe(Events.Collision, onScoreCollision)
-
---trying to port input system
-function onMoveUp(event)
-end
-
-function onMoveDown(event)
-end

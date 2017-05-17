@@ -47,7 +47,7 @@ namespace EntityW {
 		{
 			for (auto entity : entities)
 			{
-				script["processEntity"](this, entity.second, deltaTime);
+				script["processEntity"](script, entity.second, deltaTime);
 			}
 		}
 	}

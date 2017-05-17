@@ -60,7 +60,7 @@ namespace EntityW {
 
 		bool scriptHas(TypeId component);
 		sol::object scriptGet(TypeId component, sol::this_state s);
-		void scriptAttach(TypeId componentId, sol::object component);
+		void scriptAttach(TypeId componentId, sol::table component);
 	};
 
 	typedef std::shared_ptr<Entity> EntitySp;

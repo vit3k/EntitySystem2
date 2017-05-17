@@ -42,13 +42,7 @@
     <ClCompile Include="InputController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="InputSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="PhysicsSystem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AttachSystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="EntityW\EventDispatcher.cpp">
@@ -92,9 +86,6 @@
     <ClInclude Include="InputController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="InputSystem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="EntityW\Time.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -108,9 +99,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="GameState.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AttachSystem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="EntityW\EventDispatcher.h">

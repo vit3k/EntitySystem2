@@ -16,11 +16,12 @@ public:
 	~ScriptManager();
 	EntityW::TypeId registerComponent(std::string name);
 	void subscribe(EntityW::TypeId eventTypeId, sol::function listener);
+	void subscribe(EntityW::TypeId eventTypeId, sol::function listener, sol::table self);
 	EntityW::EntitySp createEntity(sol::table entityData);
 	void init();
 	Vector2 glmNormalize(Vector2 vec);
 	void run(std::string name);
-	std::shared_ptr<EntityW::ScriptSystem> registerSystem(sol::table script, sol::variadic_args args);
+	sol::table registerSystem(sol::table script, sol::variadic_args args);
 	void process(EntityW::Time deltaTime);
 };
 

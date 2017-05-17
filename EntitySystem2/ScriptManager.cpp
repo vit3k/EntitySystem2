@@ -2,6 +2,7 @@
 #include "Components.h"
 #include "Event.h"
 #include "CollisionSystem.h"
+#include "EntityW\ClassTypeId.h"
 
 ScriptManager::ScriptManager()
 {
@@ -29,6 +30,12 @@ EntityW::TypeId ScriptManager::registerComponent(std::string name)
 void ScriptManager::subscribe(EntityW::TypeId eventTypeId, sol::function listener)
 {
 	EntityW::EventDispatcher::get().scriptSubscribe(eventTypeId, listener);
+}
+
+
+void ScriptManager::subscribe(EntityW::TypeId eventTypeId, sol::function listener, sol::table self)
+{
+	EntityW::EventDispatcher::get().scriptSubscribe(eventTypeId, listener, self);
 }
 
 EntityW::EntitySp ScriptManager::createEntity(sol::table entityData)
@@ -197,6 +204,7 @@ void ScriptManager::init()
 
 	lua.new_usertype<InputComponent>("InputComponent",
 		sol::constructors<InputComponent(int)>(),
+		"controller", &InputComponent::controller,
 		sol::base_classes, sol::bases<EntityW::Component>()
 		);
 
@@ -248,8 +256,13 @@ void ScriptManager::init()
 		"Rectangle", ShapeType::Rectangle,
 		"Circle", ShapeType::Circle
 	);
-	lua["Events"] = lua.create_table_with(
-		"Collision", EntityW::EventTypeId<CollisionEvent>()
+
+	lua.new_simple_usertype<EntityW::TypeId>("TypeId");
+
+	lua.new_enum("Events",
+		"Collision", EntityW::EventTypeId<CollisionEvent>(),
+		"MoveUp", EntityW::EventTypeId<MoveUpEvent>(),
+		"MoveDown", EntityW::EventTypeId<MoveDownEvent>()
 	);
 
 	lua["Components"] = lua.create_table_with(
@@ -271,11 +284,26 @@ void ScriptManager::init()
 	glm.set_function("normalize", &ScriptManager::glmNormalize, this);
 
 	lua.set_function("createEntity", &ScriptManager::createEntity, this);
-	lua.set_function("subscribe", &ScriptManager::subscribe, this);
+	/*lua.set_function("subscribe", 
+		sol::overload(
+			sol::resolve<void(EntityW::TypeId, sol::function)>(&ScriptManager::subscribe),
+			sol::resolve<void(EntityW::TypeId, sol::function, sol::table)>(&ScriptManager::subscribe)
+		), this);
+		*/
+	lua.set_function("subscribe", sol::resolve<void(EntityW::TypeId, sol::function)>(&ScriptManager::subscribe), this);
+	lua.set_function("subscribeForObject", sol::resolve<void(EntityW::TypeId, sol::function, sol::table)>(&ScriptManager::subscribe), this);
 	lua.set_function("registerComponent", &ScriptManager::registerComponent, this);
 	lua.set_function("registerSystem", &ScriptManager::registerSystem, this);
 	lua.new_usertype<EntityW::ScriptSystem>("System",
 		sol::constructors<EntityW::ScriptSystem(sol::table, sol::variadic_args)>()
+	);
+
+	lua.new_usertype<MoveUpEvent>("MoveUpEvent",
+		"controller", &MoveUpEvent::controller
+	);
+
+	lua.new_usertype<MoveDownEvent>("MoveDownEvent",
+		"controller", &MoveDownEvent::controller
 	);
 }
 
@@ -289,11 +317,11 @@ Vector2 ScriptManager::glmNormalize(Vector2 vec)
 	return glm::normalize(vec);
 }
 
-std::shared_ptr<EntityW::ScriptSystem> ScriptManager::registerSystem(sol::table script, sol::variadic_args args)
+sol::table ScriptManager::registerSystem(sol::table script, sol::variadic_args args)
 {
 	auto system = std::make_shared<EntityW::ScriptSystem>(script, args);
 	systems.push_back(system);
-	return system;
+	return script;
 }
 
 void ScriptManager::process(EntityW::Time deltaTime)

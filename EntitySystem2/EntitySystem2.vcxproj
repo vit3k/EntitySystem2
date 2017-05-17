@@ -154,7 +154,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AttachSystem.cpp" />
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="CollisionSystem.cpp" />
     <ClCompile Include="EntityW\Component.cpp" />
@@ -162,7 +161,6 @@
     <ClCompile Include="PhysicsSystem.cpp" />
     <ClCompile Include="EntityW\EventDispatcher.cpp" />
     <ClCompile Include="InputController.cpp" />
-    <ClCompile Include="InputSystem.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="EntityW\System.cpp" />
     <ClCompile Include="RenderSystem.cpp" />
@@ -170,7 +168,6 @@
     <ClCompile Include="TextRenderingSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AttachSystem.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="CollisionSystem.h" />
     <ClInclude Include="Components.h" />
@@ -189,7 +186,6 @@
     <ClInclude Include="EntityW\EventDispatcher.h" />
     <ClInclude Include="EntityW\Fastdelegate.h" />
     <ClInclude Include="InputController.h" />
-    <ClInclude Include="InputSystem.h" />
     <ClInclude Include="RenderSystem.h" />
     <ClInclude Include="TextRenderingSystem.h" />
   </ItemGroup>

@@ -39,6 +39,10 @@ namespace EntityW {
 			{
 				return sol::make_object(lua, std::static_pointer_cast<AttachComponent>(components[component]));
 			}
+			else if (component == ComponentTypeId <InputComponent>())
+			{
+				return sol::make_object(lua, std::static_pointer_cast<InputComponent>(components[component]));
+			}
 		}
 		else 
 		{
@@ -51,11 +55,11 @@ namespace EntityW {
 		return componentList[component];
 	}
 
-	void Entity::scriptAttach(TypeId componentId, sol::object component)
+	void Entity::scriptAttach(TypeId componentId, sol::table component)
 	{
-		componentList.set(componentId);
+		
 
-		if (component.is<Component>())
+		/*if (component.is<Component>())
 		{
 			auto comp = std::shared_ptr<Component>(&component.as<Component>()); // this sucks
 			components[componentId] = comp;
@@ -63,9 +67,14 @@ namespace EntityW {
 			{
 				EventDispatcher::get().emitNow<ComponentAttachedEvent>(thisPtr, comp);
 			}
+		}*/
+		if (componentId == ComponentTypeId<AttachComponent>())
+		{
+			attach<AttachComponent>(component.get<TransformComponentSp>("parent"), Vector2(component["relative"]["x"], component["relative"]["y"]));
 		}
 		else
 		{
+			componentList.set(componentId);
 			scriptComponents[componentId] = component;
 		}
 	}
