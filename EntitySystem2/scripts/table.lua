@@ -1,20 +1,22 @@
 local scoreManager = require 'scripts/scoreManager'
-local attachSystem = import('attachSystem')
-local movementSystem = import('movementSystem')
-local inputSystem = import('inputSystem')
+local AttachSystem = import('attachSystem')
+local MovementSystem = import('movementSystem')
+
+local InputSystem = import('inputSystem')
 
 function init()
 	-- clearWorld() needs to be added when changing states will be available
-	Components.ScoringSurface = registerComponent("scoringSurface")
-	inputSystem.init()
-	movementSystem.init()
-	attachSystem.init()
-	--Score display 
-	scoreText = createEntity({
+
+	inputSystem = registerSystem(InputSystem)
+	movementSystem = registerSystem(MovementSystem)
+	attachSystem = registerSystem(AttachSystem)
+
+
+--[[	scoreText = createEntity({
 		transform = { x = -9.5, y = -7.0 },
 		text = "0 - 0"
 	})
-
+--]]
 	--Paddle for player 1
 	paddle1 = createEntity({
 		transform = { x = -10, y = -1 },
@@ -35,7 +37,7 @@ function init()
 	})
 
 	--Paddle for player 2
-	paddle2 = createEntity({
+--[[	paddle2 = createEntity({
 		transform = { x = 9.5, y = -1 },
 		render = {
 			shape = { type = Shapes.Rectangle, width = 0.5, height = 2, color = sfColor.Red }
@@ -154,6 +156,7 @@ function init()
 			paddle = paddle2
 		}
 	})
+	--]]
 	scoreManager.init(scoreText, ball)
 
 end

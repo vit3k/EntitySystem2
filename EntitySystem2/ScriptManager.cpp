@@ -3,6 +3,7 @@
 #include "Event.h"
 #include "CollisionSystem.h"
 #include "EntityW\ClassTypeId.h"
+#include <algorithm>
 
 ScriptManager::ScriptManager()
 {
@@ -13,28 +14,29 @@ ScriptManager::~ScriptManager()
 {
 }
 
-EntityW::TypeId ScriptManager::registerComponent(std::string name)
+EntityW::TypeId ScriptManager::registerComponent(sol::table table, std::string name, sol::this_state s)
 {
+	sol::state_view state(s);
+	//std::string stringName(name);
 	auto id = EntityW::ScriptComponentTypeId();
-	if (scriptComponentsMap.find(name) != scriptComponentsMap.end())
-	{
-		return scriptComponentsMap[name];
-	}
-	else
-	{
-		scriptComponentsMap[name] = id;
-		return id;
-	}
+	logger.log("Registering component " + name + " with id " + std::to_string(id));
+	state["Components"][name] = id;
+	std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+	scriptComponentsMap[name] = id;
+	return id;
+
 }
 
 void ScriptManager::subscribe(EntityW::TypeId eventTypeId, sol::function listener)
 {
+	logger.log("Subscribe to " + std::to_string(eventTypeId));
 	EntityW::EventDispatcher::get().scriptSubscribe(eventTypeId, listener);
 }
 
 
 void ScriptManager::subscribe(EntityW::TypeId eventTypeId, sol::function listener, sol::table self)
 {
+	logger.log("Subscribe to " + std::to_string(eventTypeId) + " with object");
 	EntityW::EventDispatcher::get().scriptSubscribe(eventTypeId, listener, self);
 }
 
@@ -270,12 +272,14 @@ void ScriptManager::init()
 		"Transform", EntityW::ComponentTypeId<TransformComponent>(),
 		"Text", EntityW::ComponentTypeId<TextComponent>(),
 		"Render", EntityW::ComponentTypeId<RenderComponent>(),
-		//"Input", EntityW::ComponentTypeId<InputComponent>(),
 		"Collision", EntityW::ComponentTypeId<CollisionComponent>(),
 		"Physics", EntityW::ComponentTypeId<PhysicsComponent>(),
-		//"ScoringSurface", EntityW::ComponentTypeId<ScoringSurfaceComponent>(),
 		"Velocity", EntityW::ComponentTypeId<VelocityComponent>()
 	);
+
+	auto metatable = lua.create_table();
+	metatable.set_function(sol::meta_function::index, &ScriptManager::registerComponent, this);
+	lua["Components"][sol::metatable_key] = metatable;
 
 	lua.new_usertype<EntityW::Time>("Time",
 			"asSeconds", &EntityW::Time::asSeconds
@@ -292,12 +296,12 @@ void ScriptManager::init()
 		*/
 	lua.set_function("subscribe", sol::resolve<void(EntityW::TypeId, sol::function)>(&ScriptManager::subscribe), this);
 	lua.set_function("subscribeForObject", sol::resolve<void(EntityW::TypeId, sol::function, sol::table)>(&ScriptManager::subscribe), this);
-	lua.set_function("registerComponent", &ScriptManager::registerComponent, this);
+	//lua.set_function("registerComponent", &ScriptManager::registerComponent, this);
 	lua.set_function("registerSystem", &ScriptManager::registerSystem, this);
 	lua.set_function("import", &ScriptManager::importModule, this);
 
 	lua.new_usertype<EntityW::ScriptSystem>("System",
-		sol::constructors<EntityW::ScriptSystem(sol::table, sol::variadic_args)>()
+		sol::constructors<EntityW::ScriptSystem(sol::table)>()
 	);
 
 	lua.new_simple_usertype<StartedEvent>("StartedEvent");
@@ -321,9 +325,9 @@ Vector2 ScriptManager::glmNormalize(Vector2 vec)
 	return glm::normalize(vec);
 }
 
-sol::table ScriptManager::registerSystem(sol::table script, sol::variadic_args args)
+sol::table ScriptManager::registerSystem(sol::table script)
 {
-	auto system = std::make_shared<EntityW::ScriptSystem>(script, args);
+	auto system = std::make_shared<EntityW::ScriptSystem>(script);
 	systems.push_back(system);
 	return script;
 }

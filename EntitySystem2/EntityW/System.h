@@ -31,6 +31,11 @@ namespace EntityW
 			EventDispatcher::get().subscribe<EntityCreatedEvent>(EntityW::EventListenerDelegate(this, &BaseSystem::OnEntityAdded));
 			EventDispatcher::get().subscribe<ComponentAttachedEvent>(EntityW::EventListenerDelegate(this, &BaseSystem::OnComponentAttached));
 		};
+		BaseSystem() : logger(Logger::get(getName())) 
+		{
+			EventDispatcher::get().subscribe<EntityCreatedEvent>(EntityW::EventListenerDelegate(this, &BaseSystem::OnEntityAdded));
+			EventDispatcher::get().subscribe<ComponentAttachedEvent>(EntityW::EventListenerDelegate(this, &BaseSystem::OnComponentAttached));
+		};
 	};
 
 	template<class... Args>
@@ -68,19 +73,23 @@ namespace EntityW
 	{
 		sol::table script;
 	public:
-		ComponentList createComponentList(sol::variadic_args args)
+		void createComponentList(sol::table args)
 		{
-			ComponentList components;
-			for (auto arg : args)
+			args.for_each([this](sol::object key, sol::object value)
 			{
-				components.set(arg.get<TypeId>());
-			}
-			return components;
+				logger.log("adding component to system list : " + std::to_string(value.as<TypeId>()));
+				components.set(value.as<TypeId>());
+			});
 		}
 		virtual void OnScriptComponentAttached(EventSp event);
-		ScriptSystem(sol::table script, sol::variadic_args args) : script(script), BaseSystem(createComponentList(args))
+		ScriptSystem(sol::table script) : script(script)
 		{
 			EventDispatcher::get().subscribe<ScriptComponentAttachedEvent>(EntityW::EventListenerDelegate(this, &ScriptSystem::OnScriptComponentAttached));
+			createComponentList(script["requiredComponents"]);
+			if (script["init"].valid())
+			{
+				script["init"](script);
+			}
 		};
 
 		virtual void Process(EntityW::Time deltaTime);

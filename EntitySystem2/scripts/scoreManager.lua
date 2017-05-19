@@ -12,12 +12,10 @@ function onScoreCollision(event)
 
 	if scoringSurface ~= nil then
 		scoring = scoringSurface:get(Components.ScoringSurface)
-		print(Components.ScoringSurface)
 		score[scoring.playerId + 1] = score[scoring.playerId + 1] + 1
 		scoreText:get(Components.Text).text = score[1] .. " - " .. score[2]
 
 		paddleTransform = scoring.paddle:get(Components.Transform)
-		print(Components.Attach)
 		ball:attach(Components.Attach, {
 			parentTransform = paddleTransform,
 			relativePosition = { x = glm.normalize(paddleTransform.position).x * (-1), y = 0.75 }
