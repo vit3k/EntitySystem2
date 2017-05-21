@@ -14,13 +14,13 @@ namespace EntityW {
 		sol::state_view lua(s);
 		if (components.find(component) != components.end())
 		{
-			/*if (component == ComponentTypeId<ScoringSurfaceComponent>()) 
+			/*if (component == ComponentTypeId<ScoringSurfaceComponent>())
 			{
 				auto scoring = std::static_pointer_cast<ScoringSurfaceComponent>(components[component]);
 				return sol::make_object(lua, scoring);
 			}
-			else*/ 
-			if (component == ComponentTypeId <TextComponent> ())
+			else*/
+			if (component == ComponentTypeId <TextComponent>())
 			{
 				return sol::make_object(lua, std::static_pointer_cast<TextComponent>(components[component]));
 			}
@@ -45,7 +45,7 @@ namespace EntityW {
 				return sol::make_object(lua, std::static_pointer_cast<InputComponent>(components[component]));
 			}*/
 		}
-		else 
+		else
 		{
 			return scriptComponents[component];
 		}
@@ -58,13 +58,13 @@ namespace EntityW {
 
 	void Entity::scriptAttach(TypeId componentId, sol::table component)
 	{
-		
+
 
 		/*if (component.is<Component>())
 		{
 			auto comp = std::shared_ptr<Component>(&component.as<Component>()); // this sucks
 			components[componentId] = comp;
-			if (commited) 
+			if (commited)
 			{
 				EventDispatcher::get().emitNow<ComponentAttachedEvent>(thisPtr, comp);
 			}
@@ -75,12 +75,23 @@ namespace EntityW {
 		}
 		else
 		{*/
-			componentList.set(componentId);
-			scriptComponents[componentId] = component;
-			if (commited)
-			{
-				EventDispatcher::get().emitNow<ScriptComponentAttachedEvent>(thisPtr, component);
-			}
+		componentList.set(componentId);
+		scriptComponents[componentId] = component;
+		if (commited)
+		{
+			EventDispatcher::get().emitNow<ScriptComponentAttachedEvent>(thisPtr, component);
+		}
 		//}
+	}
+
+	void Entity::scriptDetach(TypeId componentId)
+	{
+		componentList.reset(componentId);
+		scriptComponents.erase(componentId);
+
+		if (commited)
+		{
+			EventDispatcher::get().emitNow<ScriptComponentDetachedEvent>(thisPtr);
+		}
 	}
 }

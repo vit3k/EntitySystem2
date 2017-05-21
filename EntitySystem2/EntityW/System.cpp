@@ -62,4 +62,16 @@ namespace EntityW {
 			entities[entity->id] = entity;
 		}
 	}
+
+	void ScriptSystem::OnScriptComponentDetached(EventSp event)
+	{
+		auto componentDetachedEvent = std::dynamic_pointer_cast<ScriptComponentDetachedEvent>(event);
+		auto entity = componentDetachedEvent->entity;
+
+		if (!entity->hasComponents(components)) {
+			logger.log(getName() + ": entity removed");
+			entities[entity->id] = entity;
+			entities.erase(entity->id);
+		}
+	}
 }

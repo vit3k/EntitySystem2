@@ -1,24 +1,26 @@
-local scoreManager = require 'scripts/scoreManager'
+local scoreManager = import('scoreManager')
 local AttachSystem = import('attachSystem')
 local MovementSystem = import('movementSystem')
-
 local InputSystem = import('inputSystem')
+local LaunchBall = import("launchBall")
 
-function init()
+local table = {}
+
+function table:init()
 	-- clearWorld() needs to be added when changing states will be available
 
-	inputSystem = registerSystem(InputSystem)
-	movementSystem = registerSystem(MovementSystem)
-	attachSystem = registerSystem(AttachSystem)
+	local inputSystem = registerSystem(InputSystem)
+	local movementSystem = registerSystem(MovementSystem)
+	local attachSystem = registerSystem(AttachSystem)
 
 
---[[	scoreText = createEntity({
-		transform = { x = -9.5, y = -7.0 },
-		text = "0 - 0"
-	})
---]]
+	local scoreText = createEntity({
+			transform = { x = -9.5, y = -7.0 },
+			text = "0 - 0"
+		})
+
 	--Paddle for player 1
-	paddle1 = createEntity({
+	local paddle1 = createEntity({
 		transform = { x = -10, y = -1 },
 		render = {
 			shape = { type = Shapes.Rectangle, width = 0.5, height = 2, color = sfColor.Green }
@@ -37,7 +39,7 @@ function init()
 	})
 
 	--Paddle for player 2
---[[	paddle2 = createEntity({
+	local paddle2 = createEntity({
 		transform = { x = 9.5, y = -1 },
 		render = {
 			shape = { type = Shapes.Rectangle, width = 0.5, height = 2, color = sfColor.Red }
@@ -56,7 +58,7 @@ function init()
 	})
 
 	--Ball
-	ball = createEntity({
+	local ball = createEntity({
 		transform = { x = -0.15, y = -5 },
 		render = {
 			shape = { type = Shapes.Circle, radius = 0.3, color = sfColor.White }
@@ -74,7 +76,7 @@ function init()
 	})
 
 	--Top field border
-	topBorder = createEntity({
+	local topBorder = createEntity({
 		transform = {
 			x = -10,
 			y = -8.5
@@ -97,7 +99,7 @@ function init()
 	})
 
 	--Bottom field border
-	bottomBorder = createEntity({
+	local bottomBorder = createEntity({
 		transform = {
 			x = -10,
 			y = 7.5
@@ -119,8 +121,9 @@ function init()
 		}
 	})
 
+
 	--Scoring border for player 2
-	paddle1Border = createEntity({
+	local paddle1Border = createEntity({
 		transform = {
 			x = -11,
 			y = -7.5
@@ -134,12 +137,13 @@ function init()
 		},
 		scoringSurface = {
 			playerId = 1,
-			paddle = paddle1
+			paddle = paddle1,
+			launchVelocity = 8
 		}
 	})
 
 	--Scoring border for player 1
-	paddle2Border = createEntity({
+	local paddle2Border = createEntity({
 		transform = {
 			x = 10,
 			y = -7.5
@@ -153,14 +157,14 @@ function init()
 		},
 		scoringSurface = {
 			playerId = 0,
-			paddle = paddle2
+			paddle = paddle2,
+			launchVelocity = -8
 		}
 	})
-	--]]
-	scoreManager.init(scoreText, ball)
+	
+	scoreManager:init(scoreText, ball)
+	LaunchBall:init(ball)
 
 end
 
-return {
-	init = init
-}
+return table

@@ -54,7 +54,6 @@ void CollisionSystem::Process(EntityW::Time delta)
 			
 			if (collision.occured)
 			{
-				//logger.log("Collision!");
 				EntityW::EventDispatcher::get().emitNow<CollisionEvent>(collision, entity1, entity2);
 			}
 		}

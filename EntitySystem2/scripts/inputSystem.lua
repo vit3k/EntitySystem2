@@ -2,9 +2,9 @@ return {
 	requiredComponents = { Components.Input, Components.Velocity },
 	state = {},
 	processEntity = function(self, entity, deltaTime)
-		input = entity:get(Components.Input)
-		velocity = entity:get(Components.Velocity)
-		entityState = self.state[input.controller]
+		local input = entity:get(Components.Input)
+		local velocity = entity:get(Components.Velocity)
+		local entityState = self.state[input.controller]
 		if entityState ~= nil then
 			if entityState.Up then
 				velocity.velocity.y = -10

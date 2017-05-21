@@ -28,8 +28,11 @@ namespace EntityW {
 					if (e->getTypeId() == EventTypeId<MoveUpEvent>())
 						listener.second(listener.first, std::static_pointer_cast<MoveUpEvent>(e));
 
-					if (e->getTypeId() == EventTypeId<MoveDownEvent>())
+					else if (e->getTypeId() == EventTypeId<MoveDownEvent>())
 						listener.second(listener.first, std::static_pointer_cast<MoveDownEvent>(e));
+
+					else if (e->getTypeId() == EventTypeId<LaunchBallEvent>())
+						listener.second(listener.first, std::static_pointer_cast<LaunchBallEvent>(e));
 				}
 			}
 		}

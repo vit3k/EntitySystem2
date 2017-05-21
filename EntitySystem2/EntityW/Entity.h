@@ -61,6 +61,7 @@ namespace EntityW {
 		bool scriptHas(TypeId component);
 		sol::object scriptGet(TypeId component, sol::this_state s);
 		void scriptAttach(TypeId componentId, sol::table component);
+		void scriptDetach(TypeId componentId);
 	};
 
 	typedef std::shared_ptr<Entity> EntitySp;
@@ -104,6 +105,13 @@ namespace EntityW {
 		sol::table component;
 
 		ScriptComponentAttachedEvent(EntitySp entity, sol::table component) : entity(entity), component(component) {}
+	};
+
+	class ScriptComponentDetachedEvent : public Event<ScriptComponentDetachedEvent> {
+	public:
+		EntitySp entity;
+
+		ScriptComponentDetachedEvent(EntitySp entity) : entity(entity) {}
 	};
 }
 

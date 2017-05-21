@@ -1,18 +1,15 @@
 
 local table = import('table')
 
-states = {
+local states = {
 	menu, table, score
 }
 
-gameState = {
+local gameState = {
 	state = states.table
 }
 function onStarted(event)
 	print("Started")
-	--registerComponent("input")
-	--registerComponent("scoringSurface")
-	--registerComponent("attach")
 
 	if gameState.state == states.table then
 		table.init()

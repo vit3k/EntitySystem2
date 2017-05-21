@@ -15,7 +15,7 @@ private:
 public:
 	ScriptManager();
 	~ScriptManager();
-	EntityW::TypeId registerComponent(sol::table table, std::string name, sol::this_state s);
+	EntityW::TypeId registerComponent(sol::table table, std::string name);
 	void subscribe(EntityW::TypeId eventTypeId, sol::function listener);
 	void subscribe(EntityW::TypeId eventTypeId, sol::function listener, sol::table self);
 	EntityW::EntitySp createEntity(sol::table entityData);

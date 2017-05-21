@@ -28,7 +28,7 @@ void InputController::process()
 	{
 		EntityW::EventDispatcher::get().emit<MoveDownEvent>(1);
 	}
-	else if (keyboard.isKeyPressed(sf::Keyboard::Space)) 
+	else if (keyboard.isKeyPressed(sf::Keyboard::Numpad0)) 
 	{
 		EntityW::EventDispatcher::get().emit<LaunchBallEvent>(1);
 	}

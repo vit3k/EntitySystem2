@@ -82,9 +82,11 @@ namespace EntityW
 			});
 		}
 		virtual void OnScriptComponentAttached(EventSp event);
+		virtual void OnScriptComponentDetached(EventSp event);
 		ScriptSystem(sol::table script) : script(script)
 		{
 			EventDispatcher::get().subscribe<ScriptComponentAttachedEvent>(EntityW::EventListenerDelegate(this, &ScriptSystem::OnScriptComponentAttached));
+			EventDispatcher::get().subscribe<ScriptComponentDetachedEvent>(EntityW::EventListenerDelegate(this, &ScriptSystem::OnScriptComponentDetached));
 			createComponentList(script["requiredComponents"]);
 			if (script["init"].valid())
 			{

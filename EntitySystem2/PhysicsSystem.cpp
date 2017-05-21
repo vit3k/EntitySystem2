@@ -84,7 +84,8 @@ void PhysicsSystem::bounceEntity(EntitySp entity, Collision& collision, Vector2 
 		auto physics = entity->get<PhysicsComponent>();
 		auto velocity = entity->get<VelocityComponent>();
 		
-		auto reflected = glm::reflect(velocity->velocity, collision.normal);
+		logger.log("B1 " + Vector2Utils::toString(velocity->velocity));
+		auto reflected = (velocity->velocity.y != 0) ? glm::reflect(velocity->velocity, collision.normal) : Vector2(-velocity->velocity.x, 0);
 		velocity->velocity.x = physics->constraints.x ? reflected.x : velocity->velocity.x;
 		velocity->velocity.y = physics->constraints.y ? reflected.y : velocity->velocity.y;
 		auto energyVector = Vector2(prop.x * otherVelocity.x, prop.y * otherVelocity.y);
@@ -94,7 +95,7 @@ void PhysicsSystem::bounceEntity(EntitySp entity, Collision& collision, Vector2 
 		velocity->velocity.y = glm::clamp(velocity->velocity.y, (float)-6., (float)6.);
 		velocity->velocity = glm::normalize(velocity->velocity) * velocityLength;
 		
-		logger.log("B "+std::to_string(entity->id)+" "+Vector2Utils::toString(velocity->velocity)+" "+Vector2Utils::toString(energyVector));
+		logger.log("B "+std::to_string(entity->id)+" "+Vector2Utils::toString(velocity->velocity)+" "+Vector2Utils::toString(energyVector) + " " + Vector2Utils::toString(reflected) + " " + Vector2Utils::toString(collision.normal));
 	}
 }
 

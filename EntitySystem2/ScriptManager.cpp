@@ -14,14 +14,12 @@ ScriptManager::~ScriptManager()
 {
 }
 
-EntityW::TypeId ScriptManager::registerComponent(sol::table table, std::string name, sol::this_state s)
+EntityW::TypeId ScriptManager::registerComponent(sol::table table, std::string name)
 {
-	sol::state_view state(s);
-	//std::string stringName(name);
 	auto id = EntityW::ScriptComponentTypeId();
 	logger.log("Registering component " + name + " with id " + std::to_string(id));
-	state["Components"][name] = id;
-	std::transform(name.begin(), name.end(), name.begin(), ::tolower);
+	name[0] = toupper(name[0]);
+	table[name] = id;
 	scriptComponentsMap[name] = id;
 	return id;
 
@@ -76,10 +74,6 @@ EntityW::EntitySp ScriptManager::createEntity(sol::table entityData)
 			auto table = value.as<sol::table>();
 			entity->attach<VelocityComponent>(Vector2(table["velocity"]["x"], table["velocity"]["y"]), table.get<float>("bounciness"));
 		}
-		/*else if (componentName == "input")
-		{
-			entity->attach<InputComponent>(value.as<int>());
-		}*/
 		else if (componentName == "collision")
 		{
 			auto shapeTable = value.as<sol::table>()["shape"];
@@ -100,19 +94,15 @@ EntityW::EntitySp ScriptManager::createEntity(sol::table entityData)
 			auto table = value.as<sol::table>();
 			entity->attach<PhysicsComponent>(table["bounciness"], table["mass"], Vector2(table["constraints"]["x"], table["constraints"]["y"]));
 		}
-		/*else if (componentName == "scoringSurface")
-		{
-			auto table = value.as<sol::table>();
-			entity->attach<ScoringSurfaceComponent>(table["playerId"], table.get<EntityW::EntitySp>("paddle"));
-		}*/
-		/*else if (componentName == "attach")
-		{
-			auto table = value.as<sol::table>();
-			entity->attach<AttachComponent>(table.get<TransformComponentSp>("parent"), Vector2(table["relative"]["x"], table["relative"]["y"]));
-		}*/
 		else
 		{
-			entity->scriptAttach(scriptComponentsMap[componentName], value.as<sol::object>());
+			auto componentNameCase = componentName;
+			componentNameCase[0] = toupper(componentNameCase[0]);
+			if (scriptComponentsMap.find(componentNameCase) == scriptComponentsMap.end())
+			{
+				registerComponent(lua["Components"], componentNameCase);
+			}
+			entity->scriptAttach(scriptComponentsMap[componentNameCase], value.as<sol::object>());
 		}
 	});
 	entity->commit();
@@ -142,7 +132,8 @@ void ScriptManager::init()
 		"id", &EntityW::Entity::id,
 		"get", &EntityW::Entity::scriptGet,
 		"has", &EntityW::Entity::scriptHas,
-		"attach", &EntityW::Entity::scriptAttach
+		"attach", &EntityW::Entity::scriptAttach,
+		"detach", &EntityW::Entity::scriptDetach
 		);
 
 	lua.new_usertype<TextComponent>("TextComponent",
@@ -165,20 +156,6 @@ void ScriptManager::init()
 		"collision", &CollisionEvent::collision
 		);
 
-	/*lua.new_usertype<ScoringSurfaceComponent>("ScoringSurfaceComponent",
-		sol::constructors < ScoringSurfaceComponent(int, EntityW::EntitySp)>(),
-		"paddle", &ScoringSurfaceComponent::paddle,
-		"playerId", &ScoringSurfaceComponent::playerId,
-		sol::base_classes, sol::bases<EntityW::Component>()
-		);
-		*/
-	/*lua.new_usertype<AttachComponent>("AttachComponent",
-		sol::constructors<AttachComponent(TransformComponentSp, Vector2)>(),
-		"parentTransform", &AttachComponent::parentTransform,
-		"relativePosition", &AttachComponent::relativePosition,
-		sol::base_classes, sol::bases<EntityW::Component>()
-		);
-		*/
 	lua.new_simple_usertype<sf::Vector2f>("Vector2f",
 		sol::constructors < sf::Vector2f(float, float) >()
 		);
@@ -204,12 +181,6 @@ void ScriptManager::init()
 
 		);
 
-	/*lua.new_usertype<InputComponent>("InputComponent",
-		sol::constructors<InputComponent(int)>(),
-		"controller", &InputComponent::controller,
-		sol::base_classes, sol::bases<EntityW::Component>()
-		);
-		*/
 	lua.new_usertype<VelocityComponent>("VelocityComponent",
 		sol::constructors<VelocityComponent(Vector2, float)>(),
 		"velocity", &VelocityComponent::velocity,
@@ -265,7 +236,8 @@ void ScriptManager::init()
 		"Collision", EntityW::EventTypeId<CollisionEvent>(),
 		"MoveUp", EntityW::EventTypeId<MoveUpEvent>(),
 		"MoveDown", EntityW::EventTypeId<MoveDownEvent>(),
-		"Started", EntityW::EventTypeId<StartedEvent>()
+		"Started", EntityW::EventTypeId<StartedEvent>(),
+		"LaunchBall", EntityW::EventTypeId<LaunchBallEvent>()
 	);
 
 	lua["Components"] = lua.create_table_with(
@@ -296,7 +268,6 @@ void ScriptManager::init()
 		*/
 	lua.set_function("subscribe", sol::resolve<void(EntityW::TypeId, sol::function)>(&ScriptManager::subscribe), this);
 	lua.set_function("subscribeForObject", sol::resolve<void(EntityW::TypeId, sol::function, sol::table)>(&ScriptManager::subscribe), this);
-	//lua.set_function("registerComponent", &ScriptManager::registerComponent, this);
 	lua.set_function("registerSystem", &ScriptManager::registerSystem, this);
 	lua.set_function("import", &ScriptManager::importModule, this);
 
@@ -312,6 +283,10 @@ void ScriptManager::init()
 
 	lua.new_usertype<MoveDownEvent>("MoveDownEvent",
 		"controller", &MoveDownEvent::controller
+	);
+
+	lua.new_usertype<LaunchBallEvent>("LaunchBallEvent",
+		"controller", &LaunchBallEvent::controller
 	);
 }
 
