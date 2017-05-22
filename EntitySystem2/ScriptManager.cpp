@@ -25,6 +25,15 @@ EntityW::TypeId ScriptManager::registerComponent(sol::table table, std::string n
 
 }
 
+EntityW::TypeId ScriptManager::registerEvent(sol::table table, std::string name)
+{
+	auto id = EntityW::ScriptEventTypeId();
+	logger.log("Registering event " + name + " with id " + std::to_string(id));
+	name[0] = toupper(name[0]);
+	table[name] = id;
+	return id;
+}
+
 void ScriptManager::subscribe(EntityW::TypeId eventTypeId, sol::function listener)
 {
 	logger.log("Subscribe to " + std::to_string(eventTypeId));
@@ -111,7 +120,7 @@ EntityW::EntitySp ScriptManager::createEntity(sol::table entityData)
 
 void ScriptManager::init()
 {
-	lua.open_libraries(sol::lib::base, sol::lib::package);
+	lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math);
 	lua.script("print('LUA online')");
 	lua.new_usertype<Vector2>("Vector2",
 		sol::constructors<Vector2(double, double)>(),
@@ -232,13 +241,17 @@ void ScriptManager::init()
 
 	lua.new_simple_usertype<EntityW::TypeId>("TypeId");
 
-	lua.new_enum("Events",
+	lua["Events"] = lua.create_table_with(
 		"Collision", EntityW::EventTypeId<CollisionEvent>(),
 		"MoveUp", EntityW::EventTypeId<MoveUpEvent>(),
 		"MoveDown", EntityW::EventTypeId<MoveDownEvent>(),
 		"Started", EntityW::EventTypeId<StartedEvent>(),
 		"LaunchBall", EntityW::EventTypeId<LaunchBallEvent>()
 	);
+
+	auto eventsMetatable = lua.create_table();
+	eventsMetatable.set_function(sol::meta_function::index, &ScriptManager::registerEvent, this);
+	lua["Events"][sol::metatable_key] = eventsMetatable;
 
 	lua["Components"] = lua.create_table_with(
 		"Transform", EntityW::ComponentTypeId<TransformComponent>(),
@@ -256,8 +269,12 @@ void ScriptManager::init()
 	lua.new_usertype<EntityW::Time>("Time",
 			"asSeconds", &EntityW::Time::asSeconds
 		);
-	sol::table glm = lua.create_named_table("glm");
-	glm.set_function("normalize", &ScriptManager::glmNormalize, this);
+	sol::table glmTable = lua.create_named_table("glm");
+	glmTable.set_function("normalize", &ScriptManager::glmNormalize, this);
+	
+	glmTable.set_function("clamp", [] (double input, double min, double max) {
+		return glm::clamp(input, min, max);
+	});
 
 	lua.set_function("createEntity", &ScriptManager::createEntity, this);
 	/*lua.set_function("subscribe", 
@@ -270,6 +287,7 @@ void ScriptManager::init()
 	lua.set_function("subscribeForObject", sol::resolve<void(EntityW::TypeId, sol::function, sol::table)>(&ScriptManager::subscribe), this);
 	lua.set_function("registerSystem", &ScriptManager::registerSystem, this);
 	lua.set_function("import", &ScriptManager::importModule, this);
+	lua.set_function("emit", &ScriptManager::emit, this);
 
 	lua.new_usertype<EntityW::ScriptSystem>("System",
 		sol::constructors<EntityW::ScriptSystem(sol::table)>()
@@ -323,4 +341,9 @@ sol::object ScriptManager::importModule(std::string modulePath)
 void ScriptManager::clearWorld()
 {
 
+}
+
+void ScriptManager::emit(EntityW::TypeId type, sol::object data)
+{
+	EntityW::EventDispatcher::get().scriptEmit(type, data);
 }

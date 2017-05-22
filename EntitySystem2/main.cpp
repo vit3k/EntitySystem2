@@ -25,7 +25,6 @@ int main()
 
 	sf::Clock timer;
 	
-	sf::Time lastMillis = timer.getElapsedTime();
 	InputController inputController(0);
 
 	ScriptManager scriptManager;
@@ -34,6 +33,7 @@ int main()
 
 	EntityW::EventDispatcher::get().emitNow<StartedEvent>();
 
+	sf::Time lastMillis = timer.getElapsedTime();
 	sf::Time lastScriptUpdate = timer.getElapsedTime();
 	while (window.isOpen())
 	{

@@ -1,10 +1,18 @@
 return {
   onLaunchBall = function(self, event)
     if self.ball:has(Components.Attach) then
-      print("launchball")
-      self.ball:detach(Components.Attach)
-      local velocity = self.ball:get(Components.Velocity)
-      print(velocity.velocity.x.. ' ' .. velocity.velocity.y)
+      
+      local attach = self.ball:get(Components.Attach)
+      local paddleInput = attach.paddle:get(Components.Input)
+
+      if paddleInput.controller == event.controller then
+        local paddleVelocity = attach.paddle:get(Components.Velocity)
+        print("launchball")
+        self.ball:detach(Components.Attach)
+        local ballVelocity = self.ball:get(Components.Velocity)
+        print(paddleVelocity)
+        ballVelocity.velocity.y = glm.clamp(paddleVelocity.velocity.y, -6, 6)
+      end
     end
   end,
 

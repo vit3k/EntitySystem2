@@ -11,11 +11,11 @@ void InputController::process()
 	{
 		EntityW::EventDispatcher::get().emit<MoveUpEvent>(0);
 	}
-	else if (keyboard.isKeyPressed(sf::Keyboard::S)) 
+	if (keyboard.isKeyPressed(sf::Keyboard::S)) 
 	{
 		EntityW::EventDispatcher::get().emit<MoveDownEvent>(0);
 	}
-	else if (keyboard.isKeyPressed(sf::Keyboard::Space)) 
+	if (keyboard.isKeyPressed(sf::Keyboard::Space)) 
 	{
 		EntityW::EventDispatcher::get().emit<LaunchBallEvent>(0);
 	}
@@ -24,11 +24,11 @@ void InputController::process()
 	{
 		EntityW::EventDispatcher::get().emit<MoveUpEvent>(1);
 	}
-	else if (keyboard.isKeyPressed(sf::Keyboard::Down))
+	if (keyboard.isKeyPressed(sf::Keyboard::Down))
 	{
 		EntityW::EventDispatcher::get().emit<MoveDownEvent>(1);
 	}
-	else if (keyboard.isKeyPressed(sf::Keyboard::Numpad0)) 
+	if (keyboard.isKeyPressed(sf::Keyboard::Numpad0)) 
 	{
 		EntityW::EventDispatcher::get().emit<LaunchBallEvent>(1);
 	}

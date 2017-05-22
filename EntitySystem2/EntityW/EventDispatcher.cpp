@@ -2,8 +2,16 @@
 #include "../CollisionSystem.h"
 
 namespace EntityW {
+
+	TypeId ScriptEventTypeId()
+	{
+		return ClassTypeId<BaseEvent>::GetScriptTypeId();
+	}
+
 	void EventDispatcher::process()
 	{
+		// to stage process
+		// stage 1 - process events registered in C++
 		for (auto e : queues[currentQueue])
 		{
 			if (listeners.find(e->getTypeId()) != listeners.end())
@@ -43,6 +51,34 @@ namespace EntityW {
 			currentQueue = 1;
 		else
 			currentQueue = 0;
+
+		// stage 2 - process events registered by lua
+
+		for (auto e : scriptQueues[currentScriptQueue])
+		{
+
+			if (scriptListeners.find(e.first) != scriptListeners.end())
+			{
+				for (auto listener : scriptListeners[e.first])
+				{
+					listener(e.second);
+				}
+			}
+			if (scriptListenersWithTable.find(e.first) != scriptListenersWithTable.end())
+			{
+				for (auto listener : scriptListenersWithTable[e.first])
+				{
+					listener.second(listener.first, e.second);	
+				}
+			}
+		}
+
+		scriptQueues[currentScriptQueue].clear();
+
+		if (currentScriptQueue == 0)
+			currentScriptQueue = 1;
+		else
+			currentScriptQueue = 0;
 	}
 
 	void EventDispatcher::scriptSubscribe(TypeId eventTypeId, sol::function listener, sol::table self)
@@ -61,5 +97,12 @@ namespace EntityW {
 			scriptListeners[eventTypeId] = std::vector<sol::function>();
 		}
 		scriptListeners[eventTypeId].push_back(listener);
+	}
+
+	void EventDispatcher::scriptEmit(TypeId eventTypeId, sol::object data)
+	{
+		//TODO: parse known for C++ side events and push to standard queue
+
+		scriptQueues[currentScriptQueue].push_back(std::make_pair(eventTypeId, data));
 	}
 }

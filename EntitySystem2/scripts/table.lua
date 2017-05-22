@@ -3,6 +3,7 @@ local AttachSystem = import('attachSystem')
 local MovementSystem = import('movementSystem')
 local InputSystem = import('inputSystem')
 local LaunchBall = import("launchBall")
+local EndGame = import("endGame")
 
 local table = {}
 
@@ -57,6 +58,7 @@ function table:init()
 		}
 	})
 
+	local paddle1Transform = paddle1:get(Components.Transform)
 	--Ball
 	local ball = createEntity({
 		transform = { x = -0.15, y = -5 },
@@ -72,6 +74,11 @@ function table:init()
 		},
 		physics = { bounciness = 1, mass = 1,
 			constraints = { x = 1, y= 1 }
+		},
+		attach = {
+			parentTransform = paddle1Transform,
+			relativePosition = { x = glm.normalize(paddle1Transform.position).x * (-1), y = 0.75 },
+			paddle = paddle1
 		}
 	})
 
@@ -165,6 +172,7 @@ function table:init()
 	scoreManager:init(scoreText, ball)
 	LaunchBall:init(ball)
 
+	EndGame:init()
 end
 
 return table

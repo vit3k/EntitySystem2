@@ -4,6 +4,7 @@
 #include "Vector2.h"
 #include <memory>
 #include "EntityW\System.h"
+#include "EntityW\ClassTypeId.h"
 
 class ScriptManager
 {
@@ -26,6 +27,8 @@ public:
 	void process(EntityW::Time deltaTime);
 	sol::object importModule(std::string modulePath);
 	void clearWorld();
+	EntityW::TypeId registerEvent(sol::table table, std::string name);
+	void emit(EntityW::TypeId type, sol::object data);
 };
 /*
 class ComponentsMap {

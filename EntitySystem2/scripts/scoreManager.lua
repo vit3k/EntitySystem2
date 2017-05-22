@@ -18,15 +18,19 @@ return {
 			self.scoreText:get(Components.Text).text = self.score[1] .. " - " .. self.score[2]
 
 			local paddleTransform = scoring.paddle:get(Components.Transform)
+
 			self.ball:attach(Components.Attach, {
 				parentTransform = paddleTransform,
-				relativePosition = { x = glm.normalize(paddleTransform.position).x * (-1), y = 0.75 }
+				relativePosition = { x = glm.normalize(paddleTransform.position).x * (-1), y = 0.75 },
+				paddle = scoring.paddle
 			})
 			
 			local ballVelocity = self.ball:get(Components.Velocity)
 			print(ballVelocity.velocity.x .. ' ' .. ballVelocity.velocity.y)
 			ballVelocity.velocity.x = scoring.launchVelocity;
 			ballVelocity.velocity.y = 0;
+
+			emit(Events.Scored, self.score)
 		end
 	end,
 

@@ -35,13 +35,7 @@ namespace EntityW {
 		return ClassTypeId<BaseEvent>::GetTypeId<T>();
 	}
 
-	class ScriptEvent : public BaseEvent
-	{
-	public:
-		virtual TypeId getTypeId() {
-			return 10000;
-		}
-	};
+	TypeId ScriptEventTypeId();
 
 	typedef std::shared_ptr<BaseEvent> EventSp;
 
@@ -50,7 +44,10 @@ namespace EntityW {
 	class EventDispatcher
 	{
 		std::vector<EventSp> queues[2];
+		std::vector<std::pair<TypeId, sol::object>> scriptQueues[2];
+
 		int currentQueue = 0;
+		int currentScriptQueue = 0;
 		EventListenersMap listeners;
 		std::map<TypeId, std::vector<std::pair<sol::table, sol::function>>> scriptListenersWithTable;
 		std::map<TypeId, std::vector<sol::function>> scriptListeners;
@@ -108,6 +105,8 @@ namespace EntityW {
 
 		void scriptSubscribe(TypeId eventTypeId, sol::function listener, sol::table self);
 		void scriptSubscribe(TypeId eventTypeId, sol::function listener);
+
+		void scriptEmit(TypeId eventTypeId, sol::object data);
 
 		void process();
 	};
