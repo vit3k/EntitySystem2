@@ -30,7 +30,9 @@ return {
 			ballVelocity.velocity.x = scoring.launchVelocity;
 			ballVelocity.velocity.y = 0;
 
-			emit(Events.Scored, self.score)
+			if self.score[1] >= 1 or self.score[2] >= 1 then
+				emit(Events.GameOver, { score = self.score })
+			end
 		end
 	end,
 

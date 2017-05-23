@@ -288,7 +288,7 @@ void ScriptManager::init()
 	lua.set_function("registerSystem", &ScriptManager::registerSystem, this);
 	lua.set_function("import", &ScriptManager::importModule, this);
 	lua.set_function("emit", &ScriptManager::emit, this);
-
+	lua.set_function("clearWorld", &ScriptManager::clearWorld, this);
 	lua.new_usertype<EntityW::ScriptSystem>("System",
 		sol::constructors<EntityW::ScriptSystem(sol::table)>()
 	);
@@ -340,7 +340,8 @@ sol::object ScriptManager::importModule(std::string modulePath)
 
 void ScriptManager::clearWorld()
 {
-
+	systems.clear();
+	EntityW::Entity::clear();
 }
 
 void ScriptManager::emit(EntityW::TypeId type, sol::object data)

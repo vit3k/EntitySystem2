@@ -95,6 +95,7 @@ namespace EntityW
 		};
 
 		virtual void Process(EntityW::Time deltaTime);
+
 	};
 }
 

@@ -62,6 +62,11 @@ namespace EntityW {
 		sol::object scriptGet(TypeId component, sol::this_state s);
 		void scriptAttach(TypeId componentId, sol::table component);
 		void scriptDetach(TypeId componentId);
+
+		static void clear()
+		{
+			entities.clear();
+		}
 	};
 
 	typedef std::shared_ptr<Entity> EntitySp;

@@ -3,7 +3,6 @@ local AttachSystem = import('attachSystem')
 local MovementSystem = import('movementSystem')
 local InputSystem = import('inputSystem')
 local LaunchBall = import("launchBall")
-local EndGame = import("endGame")
 
 local table = {}
 
@@ -13,7 +12,6 @@ function table:init()
 	local inputSystem = registerSystem(InputSystem)
 	local movementSystem = registerSystem(MovementSystem)
 	local attachSystem = registerSystem(AttachSystem)
-
 
 	local scoreText = createEntity({
 			transform = { x = -9.5, y = -7.0 },
@@ -171,8 +169,6 @@ function table:init()
 	
 	scoreManager:init(scoreText, ball)
 	LaunchBall:init(ball)
-
-	EndGame:init()
 end
 
 return table
