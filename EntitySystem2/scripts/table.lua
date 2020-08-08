@@ -64,7 +64,7 @@ function table:init()
 			shape = { type = Shapes.Circle, radius = 0.3, color = sfColor.White }
 		},
 		velocity = {
-			velocity = { x = -8, y = 4 },
+			velocity = { x = 8, y = 1 },
 			bounciness = 1
 		},
 		collision = {
@@ -166,7 +166,6 @@ function table:init()
 			launchVelocity = -8
 		}
 	})
-	
 	scoreManager:init(scoreText, ball)
 	LaunchBall:init(ball)
 end

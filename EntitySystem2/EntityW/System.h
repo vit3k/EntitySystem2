@@ -8,11 +8,11 @@
 #include "EventDispatcher.h"
 #include "../Logger.h"
 
-namespace EntityW 
+namespace EntityW
 {
 	class World;
 
-	class BaseSystem 
+	class BaseSystem
 	{
 	protected:
 		std::map<long, EntitySp> entities;
@@ -24,17 +24,20 @@ namespace EntityW
 		virtual void ProcessEntity(EntitySp entity, Time deltaTime);
 		virtual void OnEntityAdded(EventSp event);
 		virtual void OnComponentAttached(EventSp event);
+		virtual void OnEntityRemoved(EventSp event);
 		//void setWorld(World* world) { this->world = world; }
 		ComponentList components;
 		BaseSystem(ComponentList components) : components(components), logger(Logger::get(getName()))
 		{
 			EventDispatcher::get().subscribe<EntityCreatedEvent>(EntityW::EventListenerDelegate(this, &BaseSystem::OnEntityAdded));
 			EventDispatcher::get().subscribe<ComponentAttachedEvent>(EntityW::EventListenerDelegate(this, &BaseSystem::OnComponentAttached));
+			EventDispatcher::get().subscribe<EntityRemovedEvent>(EntityW::EventListenerDelegate(this, &BaseSystem::OnEntityRemoved));
 		};
-		BaseSystem() : logger(Logger::get(getName())) 
+		BaseSystem() : logger(Logger::get(getName()))
 		{
 			EventDispatcher::get().subscribe<EntityCreatedEvent>(EntityW::EventListenerDelegate(this, &BaseSystem::OnEntityAdded));
 			EventDispatcher::get().subscribe<ComponentAttachedEvent>(EntityW::EventListenerDelegate(this, &BaseSystem::OnComponentAttached));
+			EventDispatcher::get().subscribe<EntityRemovedEvent>(EntityW::EventListenerDelegate(this, &BaseSystem::OnEntityRemoved));
 		};
 	};
 
@@ -42,19 +45,23 @@ namespace EntityW
 	struct TypeList {};
 
 	template<class... Args>
-	class System : public BaseSystem 
+	class System : public BaseSystem
 	{
 	public:
-		
 
-		template <class... Args>
-		ComponentList createComponentList(TypeList<Args...> typeList) { return ComponentList(); };
 
-		template <class T, class... Args>
-		ComponentList createComponentList(TypeList<T, Args...> typeList)
+		template <class... Args2>
+		ComponentList createComponentList(TypeList<Args2...> typeList)
+		{
+			return ComponentList();
+		};
+
+		template <class T, class... Args2>
+		ComponentList createComponentList(TypeList<T, Args2...> typeList)
 		{
 			static_assert(std::is_base_of<Component, T>::value, "Invalid component");
-			return ComponentList().set(ComponentTypeId<T>()) | createComponentList(TypeList<Args...>());
+			auto test = ComponentTypeId<T>();
+			return ComponentList().set(test) | createComponentList(TypeList<Args2...>());
 		};
 
 		System() : BaseSystem(createComponentList(TypeList<Args...>{})) {
@@ -66,7 +73,7 @@ namespace EntityW
 	template <class T>
 	TypeId SystemTypeId()
 	{
-		return ClassTypeId<System>::GetTypeId<T>();
+		return ClassTypeId<System<>>::GetTypeId<T>();
 	};
 
 	class ScriptSystem : public BaseSystem
@@ -93,7 +100,7 @@ namespace EntityW
 				script["init"](script);
 			}
 		};
-
+		virtual std::string getName() { return script["name"];  }
 		virtual void Process(EntityW::Time deltaTime);
 
 	};

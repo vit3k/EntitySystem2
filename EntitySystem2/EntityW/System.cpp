@@ -29,6 +29,17 @@ namespace EntityW {
 
 	}
 
+	void BaseSystem::OnEntityRemoved(EventSp event) {
+		auto entityRemovedEvent = std::dynamic_pointer_cast<EntityRemovedEvent>(event);
+		auto entity = entityRemovedEvent->entity;
+		//if (entities.)
+		logger.log(getName() + ": entity removed " + std::to_string(entity->id));
+		if (entities.find(entity->id) != entities.end())
+		{
+			entities.erase(entity->id);
+		}
+
+	}
 	void BaseSystem::Process(Time deltaTime)
 	{
 		for (auto entity : entities)

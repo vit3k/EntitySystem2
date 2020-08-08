@@ -4,7 +4,7 @@ void TextRenderingSystem::ProcessEntity(EntityW::EntitySp entity, EntityW::Time 
 {
 	sf::Text text;
 	text.setFont(font);
-	text.setCharacterSize(12);
+	text.setCharacterSize(20);
 	text.setString(entity->get<TextComponent>()->text);
 	text.setFillColor(sf::Color::White);
 	auto transform = entity->get<TransformComponent>();

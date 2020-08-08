@@ -6,35 +6,39 @@
 #include "RenderSystem.h"
 #include "TextRenderingSystem.h"
 #include "InputController.h"
-#include "EntityW\EventDispatcher.h"
+#include "EntityW/EventDispatcher.h"
 #include "CollisionSystem.h"
 #include "PhysicsSystem.h"
-#include "sol.hpp"
+#include <sol/sol.hpp>
 #include <algorithm>
-#include "EntityW\ClassTypeId.h"
+#include "EntityW/ClassTypeId.h"
 #include "ScriptManager.h"
 
 int main()
 {
-	sf::RenderWindow window(sf::VideoMode(800, 600), "Pong");
-
+	auto vm = sf::VideoMode::getDesktopMode();
+	std::cout << vm.width << " x " << vm.height << std::endl;
+	sf::RenderWindow window(sf::VideoMode(1600, 1400), "Pong");
+	//sf::View view(sf::FloatRect(-10f, ))
+	window.setFramerateLimit(60);
 	std::shared_ptr<RenderSystem> renderSystem(new RenderSystem(&window));
 	std::shared_ptr<TextRenderingSystem> textRenderingSystem(new TextRenderingSystem(&window));
 	auto collisionSystem = std::make_shared<CollisionSystem>();
 	auto physicsSystem = std::make_shared<PhysicsSystem>();
 
-	sf::Clock timer;
-	
 	InputController inputController(0);
 
 	ScriptManager scriptManager;
 	scriptManager.init();
 	scriptManager.run("scripts/pong.lua");
+	auto fpsText = EntityW::Entity::create();
+	fpsText->attach<TransformComponent>(Vector2(-9.5, -6));
+	fpsText->attach<TextComponent>("0");
+	fpsText->commit();
 
 	EntityW::EventDispatcher::get().emitNow<StartedEvent>();
 
-	sf::Time lastMillis = timer.getElapsedTime();
-	sf::Time lastScriptUpdate = timer.getElapsedTime();
+	sf::Clock timer;
 	while (window.isOpen())
 	{
 		sf::Event event;
@@ -45,24 +49,16 @@ int main()
 				window.close();
 			}
 		}
-		sf::Time currentMillis = timer.getElapsedTime();
-		EntityW::Time delta((currentMillis - lastMillis).asMicroseconds());
-		lastMillis = currentMillis;
 
+		EntityW::Time delta(timer.restart().asMicroseconds());
+		auto fps = 1. / delta.asSeconds();
+		fpsText->get<TextComponent>()->text = std::to_string(fps);
 		// low level systems
 		inputController.process();
 
 		//event bus before scripts
 		EntityW::EventDispatcher::get().process();
 
-		//inputSystem->Process(delta);
-		// script could be updated less often but somehow this is not working with collision and physics right now
-		//if ((currentMillis - lastScriptUpdate).asMilliseconds() > (1000 / 100))
-		//{
-			//EntityW::Time scriptDelta((currentMillis - lastScriptUpdate).asMicroseconds());
-			//scriptManager.process(scriptDelta);
-			//lastScriptUpdate = currentMillis;
-		//}
 		// systems from lua
 		scriptManager.process(delta);
 
@@ -78,10 +74,8 @@ int main()
 		renderSystem->Process(delta);
 		textRenderingSystem->Process(delta);
 		window.display();
-		
+
 	}
-	
+	std::cout << "Exit" << std::endl;
 	return 0;
 }
-
-

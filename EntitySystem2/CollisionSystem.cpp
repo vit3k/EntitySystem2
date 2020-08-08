@@ -1,17 +1,17 @@
 #include "CollisionSystem.h"
 #include "Collider.h"
-#include "EntityW\EventDispatcher.h"
+#include "EntityW/EventDispatcher.h"
 
 CollisionSystem::CollisionSystem() {
-	colliders[ColliderType(Rectangle, Rectangle)] = new BoxBoxCollider();
-	colliders[ColliderType(Rectangle, Circle)] = new BoxCircleCollider();
+	colliders[ColliderType(Rectangle, Rectangle)] = std::make_shared<BoxBoxCollider>();
+	colliders[ColliderType(Rectangle, Circle)] = std::make_shared<BoxCircleCollider>();
 }
 
 CollisionSystem::~CollisionSystem() {
-	for (auto elem : colliders)
+	/*for (auto elem : colliders)
 	{
 		delete elem.second;
-	}
+	}*/
 	colliders.clear();
 }
 
@@ -32,30 +32,37 @@ void CollisionSystem::Process(EntityW::Time delta)
 
 			auto type1 = collisionComponent1->shape->getType();
 			auto type2 = collisionComponent2->shape->getType();
-			Collider* collider = colliders[ColliderType(type1, type2)];
+			auto collider = colliders[ColliderType(type1, type2)];
 
 			Collision collision;
 
-			if (collider != NULL) 
+			if (collider != NULL)
 			{
 				collision = collider->collide(entity1, entity2);
+				if (collision.occured)
+				{
+					logger.log("COLLISION");
+					EntityW::EventDispatcher::get().emitNow<CollisionEvent>(collision, entity1, entity2);
+				}
 			}
-			else 
+			else
 			{
 				collider = colliders[std::pair<ShapeType, ShapeType>(collisionComponent2->shape->getType(), collisionComponent1->shape->getType())];
 
 				if (collider != NULL) {
 					collision = collider->collide(entity2, entity1);
+					if (collision.occured)
+					{
+						logger.log("COLLISION");
+						EntityW::EventDispatcher::get().emitNow<CollisionEvent>(collision, entity2, entity1);
+					}
 				}
 				else {
 					logger.log("No matching collider");
 				}
 			}
-			
-			if (collision.occured)
-			{
-				EntityW::EventDispatcher::get().emitNow<CollisionEvent>(collision, entity1, entity2);
-			}
+
+
 		}
 	}
 }

@@ -1,6 +1,5 @@
 #pragma once
-#include <SFML\System.hpp>
-#include <glm.hpp>
+#include <glm/glm.hpp>
 
 using Vector2 = glm::vec2;
 

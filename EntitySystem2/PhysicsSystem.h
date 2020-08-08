@@ -1,13 +1,13 @@
 #pragma once
-#include "EntityW\System.h"
+#include "EntityW/System.h"
 #include "Components.h"
-#include "EntityW\Time.h"
+#include "EntityW/Time.h"
 #include "CollisionSystem.h"
 
 class PhysicsSystem : public EntityW::System<TransformComponent, PhysicsComponent, CollisionComponent>
 {
 	std::vector<CollisionEventSp> collisions;
-	void correctEntity(EntityW::EntitySp entity, Collision& collision, Vector2 prop);
+	void correctEntity(EntityW::EntitySp entity, Collision& collision, Vector2 prop, float multiplier);
 	void bounceEntity(EntityW::EntitySp entity, Collision& collision, Vector2 prop, Vector2 otherVelocity);
 	float getMass(EntityW::EntitySp entity);
 	Vector2 getVelocity(EntityW::EntitySp entity);

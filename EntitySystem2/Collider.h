@@ -1,13 +1,13 @@
 #pragma once
 
-#include "EntityW\Entity.h"
+#include "EntityW/Entity.h"
 #include "Logger.h"
 #include "Vector2.h"
 #include <cmath>
 #include <vector>
 
 class Collision {
-	
+
 public:
 	bool occured = false;
 	float depth;

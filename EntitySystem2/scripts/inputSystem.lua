@@ -1,5 +1,6 @@
 return {
 	requiredComponents = { Components.Input, Components.Velocity },
+	name = 'InputSystem',
 	state = {},
 	processEntity = function(self, entity, deltaTime)
 		local input = entity:get(Components.Input)

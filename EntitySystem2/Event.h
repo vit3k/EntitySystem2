@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EntityW\EventDispatcher.h"
+#include "EntityW/EventDispatcher.h"
 
 template<class T>
 class InputEvent : public EntityW::Event<T>

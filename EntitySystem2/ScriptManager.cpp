@@ -2,8 +2,9 @@
 #include "Components.h"
 #include "Event.h"
 #include "CollisionSystem.h"
-#include "EntityW\ClassTypeId.h"
+#include "EntityW/ClassTypeId.h"
 #include <algorithm>
+#include "Input.h"
 
 ScriptManager::ScriptManager()
 {
@@ -128,7 +129,7 @@ void ScriptManager::init()
 		"y", &Vector2::y
 		);
 
-	lua.new_simple_usertype<EntityW::Component>("Component");
+	lua.new_usertype<EntityW::Component>("Component");
 
 	lua.new_usertype<TransformComponent>("TransformComponent",
 		sol::constructors<TransformComponent(Vector2)>(),
@@ -165,21 +166,21 @@ void ScriptManager::init()
 		"collision", &CollisionEvent::collision
 		);
 
-	lua.new_simple_usertype<sf::Vector2f>("Vector2f",
+	lua.new_usertype<sf::Vector2f>("Vector2f",
 		sol::constructors < sf::Vector2f(float, float) >()
 		);
 
-	lua.new_simple_usertype<sf::Shape>("Shape",
+	lua.new_usertype<sf::Shape>("Shape",
 		"setFillColor", &sf::RectangleShape::setFillColor
 		);
 
-	lua.new_simple_usertype<sf::RectangleShape>("RectangleShape",
+	lua.new_usertype<sf::RectangleShape>("RectangleShape",
 		sol::constructors<sf::RectangleShape(sf::Vector2f)>(),
 		"setFillColor", &sf::RectangleShape::setFillColor,
 		sol::base_classes, sol::base_list<sf::Shape>()
 		);
 
-	lua.new_simple_usertype<sf::CircleShape>("CircleShape",
+	lua.new_usertype<sf::CircleShape>("CircleShape",
 		sol::constructors<sf::CircleShape(float)>(),
 		sol::base_classes, sol::base_list<sf::Shape>()
 		);
@@ -196,11 +197,8 @@ void ScriptManager::init()
 		"bounciness", &VelocityComponent::bounciness,
 		sol::base_classes, sol::bases<EntityW::Component>()
 		);
-		
-	lua.new_usertype<CollisionShape>("CollisionShape",
-		"width", &RectCollisionShape::width,
-		"height", &RectCollisionShape::height,
-		"center", &CircleCollisionShape::center);
+
+	lua.new_usertype<CollisionShape>("CollisionShape");
 
 	lua.new_usertype<RectCollisionShape>("RectCollisionShape",
 		sol::constructors<RectCollisionShape(float, float)>(),
@@ -211,6 +209,7 @@ void ScriptManager::init()
 
 	lua.new_usertype<CircleCollisionShape>("CircleCollisionShape",
 		sol::constructors<CircleCollisionShape(float)>(),
+		"center", &CircleCollisionShape::center,
 		sol::base_classes, sol::bases<CollisionShape>()
 		);
 
@@ -239,7 +238,7 @@ void ScriptManager::init()
 		"Circle", ShapeType::Circle
 	);
 
-	lua.new_simple_usertype<EntityW::TypeId>("TypeId");
+	lua.new_usertype<EntityW::TypeId>("TypeId");
 
 	lua["Events"] = lua.create_table_with(
 		"Collision", EntityW::EventTypeId<CollisionEvent>(),
@@ -269,15 +268,24 @@ void ScriptManager::init()
 	lua.new_usertype<EntityW::Time>("Time",
 			"asSeconds", &EntityW::Time::asSeconds
 		);
+	/*lua.new_usertype<Input>("Input",
+		"isKeyPressed", &Input::isKeyPressed
+	);*/
+	lua.new_enum("Key",
+		"Up", sf::Keyboard::Key::Up,
+		"Down", sf::Keyboard::Key::Down,
+		"W", sf::Keyboard::Key::W,
+		"S", sf::Keyboard::Key::S);
+
 	sol::table glmTable = lua.create_named_table("glm");
 	glmTable.set_function("normalize", &ScriptManager::glmNormalize, this);
-	
+
 	glmTable.set_function("clamp", [] (double input, double min, double max) {
 		return glm::clamp(input, min, max);
 	});
 
 	lua.set_function("createEntity", &ScriptManager::createEntity, this);
-	/*lua.set_function("subscribe", 
+	/*lua.set_function("subscribe",
 		sol::overload(
 			sol::resolve<void(EntityW::TypeId, sol::function)>(&ScriptManager::subscribe),
 			sol::resolve<void(EntityW::TypeId, sol::function, sol::table)>(&ScriptManager::subscribe)
@@ -293,7 +301,7 @@ void ScriptManager::init()
 		sol::constructors<EntityW::ScriptSystem(sol::table)>()
 	);
 
-	lua.new_simple_usertype<StartedEvent>("StartedEvent");
+	lua.new_usertype<StartedEvent>("StartedEvent");
 
 	lua.new_usertype<MoveUpEvent>("MoveUpEvent",
 		"controller", &MoveUpEvent::controller
@@ -340,11 +348,17 @@ sol::object ScriptManager::importModule(std::string modulePath)
 
 void ScriptManager::clearWorld()
 {
-	systems.clear();
+	EntityW::EventDispatcher::get().scriptClear();
 	EntityW::Entity::clear();
+	systems.clear();
 }
 
 void ScriptManager::emit(EntityW::TypeId type, sol::object data)
 {
 	EntityW::EventDispatcher::get().scriptEmit(type, data);
+}
+
+void ScriptManager::close()
+{
+//	lua.release();
 }

@@ -1,9 +1,9 @@
 #pragma once
-#include "EntityW\Component.h"
+#include "EntityW/Component.h"
 #include <SFML/Graphics.hpp>
 #include "Vector2.h"
-#include <glm.hpp>
-#include "EntityW\Entity.h"
+#include <glm/glm.hpp>
+#include "EntityW/Entity.h"
 #include "Collider.h"
 
 enum ShapeType {
@@ -14,7 +14,7 @@ class TransformComponent : public EntityW::Component {
 public:
 	Vector2 position;
 	TransformComponent(Vector2 position) : position(position) {}
-	
+
 };
 
 typedef std::shared_ptr<TransformComponent> TransformComponentSp;
@@ -72,7 +72,7 @@ public:
 		return Vector2(width / 2, height / 2);
 	}
 	virtual Projection project(TransformComponentSp transform, Vector2 axis) {
-		
+
 		auto vertices = calculateVertices(transform);
 
 		float max = glm::dot(axis, vertices[0]);
@@ -120,7 +120,7 @@ public:
 	Collision collision;
 	std::shared_ptr<CollisionShape> shape;
 	CollisionComponent(std::shared_ptr<CollisionShape> shape) : shape(shape) {}
-	
+
 };
 
 class PhysicsComponent : public EntityW::Component {

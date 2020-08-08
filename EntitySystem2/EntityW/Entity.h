@@ -4,11 +4,12 @@
 #include <map>
 #include "Component.h"
 #include "EventDispatcher.h"
-#include "../sol.hpp"
+#include <sol/sol.hpp>
 
 namespace EntityW {
 	class EntityCreatedEvent;
 	class ComponentAttachedEvent;
+	class EntityRemovedEvent;
 	class Entity;
 
 	class Entity {
@@ -44,7 +45,7 @@ namespace EntityW {
 		Entity() {
 			id = getNextEntityId();
 		};
-		
+
 		static std::shared_ptr<Entity> create() {
 			auto entity = std::make_shared<Entity>();
 			entity->setPointer(entity);
@@ -65,6 +66,11 @@ namespace EntityW {
 
 		static void clear()
 		{
+			//EventDispatcher::get().emitNow<ClearWorldEvent>();
+			for (auto entity : entities)
+			{
+				EventDispatcher::get().emitNow<EntityRemovedEvent>(entity.second);
+			}
 			entities.clear();
 		}
 	};
@@ -95,6 +101,16 @@ namespace EntityW {
 	public:
 		EntitySp entity;
 		EntityCreatedEvent(EntitySp entity) : entity(entity) {}
+	};
+
+	class EntityRemovedEvent : public Event<EntityRemovedEvent> {
+	public:
+		EntitySp entity;
+		EntityRemovedEvent(EntitySp entity) : entity(entity) {}
+	};
+
+	class ClearWorldEvent : public Event<ClearWorldEvent> {
+
 	};
 
 	class ComponentAttachedEvent : public Event<ComponentAttachedEvent> {

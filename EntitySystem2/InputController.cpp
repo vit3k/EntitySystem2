@@ -1,7 +1,7 @@
 #include "InputController.h"
-#include <SFML\Window.hpp>
+#include <SFML/Window.hpp>
 
-#include "EntityW\EventDispatcher.h"
+#include "EntityW/EventDispatcher.h"
 #include "Event.h"
 
 void InputController::process()
@@ -11,11 +11,11 @@ void InputController::process()
 	{
 		EntityW::EventDispatcher::get().emit<MoveUpEvent>(0);
 	}
-	if (keyboard.isKeyPressed(sf::Keyboard::S)) 
+	if (keyboard.isKeyPressed(sf::Keyboard::S))
 	{
 		EntityW::EventDispatcher::get().emit<MoveDownEvent>(0);
 	}
-	if (keyboard.isKeyPressed(sf::Keyboard::Space)) 
+	if (keyboard.isKeyPressed(sf::Keyboard::Space))
 	{
 		EntityW::EventDispatcher::get().emit<LaunchBallEvent>(0);
 	}
@@ -28,7 +28,7 @@ void InputController::process()
 	{
 		EntityW::EventDispatcher::get().emit<MoveDownEvent>(1);
 	}
-	if (keyboard.isKeyPressed(sf::Keyboard::Numpad0)) 
+	if (keyboard.isKeyPressed(sf::Keyboard::Slash))
 	{
 		EntityW::EventDispatcher::get().emit<LaunchBallEvent>(1);
 	}

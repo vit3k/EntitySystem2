@@ -68,7 +68,7 @@ namespace EntityW {
 			{
 				for (auto listener : scriptListenersWithTable[e.first])
 				{
-					listener.second(listener.first, e.second);	
+					listener.second(listener.first, e.second);
 				}
 			}
 		}
@@ -99,6 +99,11 @@ namespace EntityW {
 		scriptListeners[eventTypeId].push_back(listener);
 	}
 
+	void EventDispatcher::scriptClear()
+	{
+		scriptListeners.clear();
+		scriptListenersWithTable.clear();
+	}
 	void EventDispatcher::scriptEmit(TypeId eventTypeId, sol::object data)
 	{
 		//TODO: parse known for C++ side events and push to standard queue

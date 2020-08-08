@@ -1,10 +1,10 @@
 #pragma once
-#include "EntityW\Entity.h"
-#include "sol.hpp"
+#include "EntityW/Entity.h"
+#include <sol/sol.hpp>
 #include "Vector2.h"
 #include <memory>
-#include "EntityW\System.h"
-#include "EntityW\ClassTypeId.h"
+#include "EntityW/System.h"
+#include "EntityW/ClassTypeId.h"
 
 class ScriptManager
 {
@@ -29,25 +29,5 @@ public:
 	void clearWorld();
 	EntityW::TypeId registerEvent(sol::table table, std::string name);
 	void emit(EntityW::TypeId type, sol::object data);
+	void close();
 };
-/*
-class ComponentsMap {
-	std::map<std::string, EntityW::TypeId> componentsMap;
-
-public:
-	/*EntityW::TypeId getComponent(std::string name, sol::this_state state)
-	{
-		//if (componentsMap)
-	}
-
-	ComponentsMap()
-	{
-		componentsMap["Transform"] = EntityW::ComponentTypeId<TransformComponent>();
-		componentsMap["Text"] = EntityW::ComponentTypeId<TextComponent>();
-		componentsMap["Render"] = EntityW::ComponentTypeId<RenderComponent>();
-		componentsMap["Collision"] = EntityW::ComponentTypeId<CollisionComponent>();
-		componentsMap["Physics"] = EntityW::ComponentTypeId<PhysicsComponent>();
-		componentsMap["Velocity"] = EntityW::ComponentTypeId<VelocityComponent>();
-	}
-};
-*/

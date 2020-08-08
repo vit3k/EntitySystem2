@@ -1,5 +1,5 @@
 #pragma once
-#include "EntityW\System.h"
+#include "EntityW/System.h"
 #include "Components.h"
 
 class TextRenderingSystem : public EntityW::System<TransformComponent, TextComponent>
@@ -11,7 +11,7 @@ protected:
 public:
 	TextRenderingSystem(sf::RenderTarget* renderTarget) : renderTarget(renderTarget) {
 		font.loadFromFile("cour.ttf");
-		
+
 	};
 	virtual void ProcessEntity(EntityW::EntitySp entity, EntityW::Time deltaTime);
 };

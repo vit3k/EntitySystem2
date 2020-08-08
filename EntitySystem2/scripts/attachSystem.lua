@@ -1,5 +1,6 @@
 return {
 	requiredComponents = { Components.Transform, Components.Attach },
+	name = 'AttachSystem',
 	processEntity = function(self, entity, deltaTime)
 		local transform = entity:get(Components.Transform)
 		local attach = entity:get(Components.Attach)

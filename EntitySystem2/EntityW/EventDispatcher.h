@@ -7,7 +7,7 @@
 #include "ClassTypeId.h"
 #include <memory>
 #include <string>
-#include "../sol.hpp"
+#include <sol/sol.hpp>
 
 namespace EntityW {
 	class BaseEvent
@@ -19,6 +19,8 @@ namespace EntityW {
 			return std::to_string(getTypeId());
 		}
 	};
+
+	template <class T> TypeId EventTypeId();
 
 	template<class T>
 	class Event : public BaseEvent
@@ -107,7 +109,7 @@ namespace EntityW {
 		void scriptSubscribe(TypeId eventTypeId, sol::function listener);
 
 		void scriptEmit(TypeId eventTypeId, sol::object data);
-
+		void scriptClear();
 		void process();
 	};
 
