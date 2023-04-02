@@ -1,5 +1,5 @@
-local table = import('table')
-local score = import('score')
+local table = require('level')
+local score = require('score')
 
 return {
   state = table,

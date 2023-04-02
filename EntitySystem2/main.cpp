@@ -46,10 +46,14 @@ int main()
 		{
 			if (event.type == sf::Event::Closed)
 			{
+				std::cout << "Window closed" << std::endl;
 				window.close();
 			}
 		}
-
+		if (!window.isOpen()) 
+		{
+			break;
+		}
 		EntityW::Time delta(timer.restart().asMicroseconds());
 		auto fps = 1. / delta.asSeconds();
 		fpsText->get<TextComponent>()->text = std::to_string(fps);
@@ -74,6 +78,7 @@ int main()
 		renderSystem->Process(delta);
 		textRenderingSystem->Process(delta);
 		window.display();
+		
 
 	}
 	std::cout << "Exit" << std::endl;

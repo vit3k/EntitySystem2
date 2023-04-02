@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "memory": "cpp"
-    }
+        "memory": "cpp",
+        "algorithm": "cpp"
+    },
+    "cmake.configureOnOpen": true
 }

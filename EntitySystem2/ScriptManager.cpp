@@ -121,7 +121,8 @@ EntityW::EntitySp ScriptManager::createEntity(sol::table entityData)
 
 void ScriptManager::init()
 {
-	lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math);
+	lua.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math, sol::lib::os);
+	lua["package"]["path"] = "./scripts/?.lua";
 	lua.script("print('LUA online')");
 	lua.new_usertype<Vector2>("Vector2",
 		sol::constructors<Vector2(double, double)>(),
@@ -240,7 +241,7 @@ void ScriptManager::init()
 
 	lua.new_usertype<EntityW::TypeId>("TypeId");
 
-	lua["Events"] = lua.create_table_with(
+	lua["internal_Events"] = lua.create_table_with(
 		"Collision", EntityW::EventTypeId<CollisionEvent>(),
 		"MoveUp", EntityW::EventTypeId<MoveUpEvent>(),
 		"MoveDown", EntityW::EventTypeId<MoveDownEvent>(),
@@ -250,9 +251,9 @@ void ScriptManager::init()
 
 	auto eventsMetatable = lua.create_table();
 	eventsMetatable.set_function(sol::meta_function::index, &ScriptManager::registerEvent, this);
-	lua["Events"][sol::metatable_key] = eventsMetatable;
+	lua["internal_Events"][sol::metatable_key] = eventsMetatable;
 
-	lua["Components"] = lua.create_table_with(
+	lua["internal_Components"] = lua.create_table_with(
 		"Transform", EntityW::ComponentTypeId<TransformComponent>(),
 		"Text", EntityW::ComponentTypeId<TextComponent>(),
 		"Render", EntityW::ComponentTypeId<RenderComponent>(),
@@ -263,7 +264,7 @@ void ScriptManager::init()
 
 	auto metatable = lua.create_table();
 	metatable.set_function(sol::meta_function::index, &ScriptManager::registerComponent, this);
-	lua["Components"][sol::metatable_key] = metatable;
+	lua["internal_Components"][sol::metatable_key] = metatable;
 
 	lua.new_usertype<EntityW::Time>("Time",
 			"asSeconds", &EntityW::Time::asSeconds
@@ -284,19 +285,13 @@ void ScriptManager::init()
 		return glm::clamp(input, min, max);
 	});
 
-	lua.set_function("createEntity", &ScriptManager::createEntity, this);
-	/*lua.set_function("subscribe",
-		sol::overload(
-			sol::resolve<void(EntityW::TypeId, sol::function)>(&ScriptManager::subscribe),
-			sol::resolve<void(EntityW::TypeId, sol::function, sol::table)>(&ScriptManager::subscribe)
-		), this);
-		*/
-	lua.set_function("subscribe", sol::resolve<void(EntityW::TypeId, sol::function)>(&ScriptManager::subscribe), this);
-	lua.set_function("subscribeForObject", sol::resolve<void(EntityW::TypeId, sol::function, sol::table)>(&ScriptManager::subscribe), this);
-	lua.set_function("registerSystem", &ScriptManager::registerSystem, this);
-	lua.set_function("import", &ScriptManager::importModule, this);
-	lua.set_function("emit", &ScriptManager::emit, this);
-	lua.set_function("clearWorld", &ScriptManager::clearWorld, this);
+	lua.set_function("internal_createEntity", &ScriptManager::createEntity, this);
+	lua.set_function("internal_subscribe", sol::resolve<void(EntityW::TypeId, sol::function)>(&ScriptManager::subscribe), this);
+	lua.set_function("internal_subscribeForObject", sol::resolve<void(EntityW::TypeId, sol::function, sol::table)>(&ScriptManager::subscribe), this);
+	lua.set_function("internal_registerSystem", &ScriptManager::registerSystem, this);
+	//lua.set_function("import", &ScriptManager::importModule, this);
+	lua.set_function("internal_emit", &ScriptManager::emit, this);
+	lua.set_function("internal_clearWorld", &ScriptManager::clearWorld, this);
 	lua.new_usertype<EntityW::ScriptSystem>("System",
 		sol::constructors<EntityW::ScriptSystem(sol::table)>()
 	);
@@ -360,5 +355,5 @@ void ScriptManager::emit(EntityW::TypeId type, sol::object data)
 
 void ScriptManager::close()
 {
-//	lua.release();
+	lua.stack_clear();
 }
