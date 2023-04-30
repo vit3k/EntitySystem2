@@ -10,29 +10,31 @@ enum ShapeType {
 	Rectangle, Circle
 };
 
-class TransformComponent : public EntityW::Component {
+class TransformComponent : public EntityW::Component<TransformComponent> {
 public:
 	Vector2 position;
 	TransformComponent(Vector2 position) : position(position) {}
-
+	static std::shared_ptr<TransformComponent> create(Vector2 position) {
+		return std::make_shared<TransformComponent>(position);
+	}
 };
 
 typedef std::shared_ptr<TransformComponent> TransformComponentSp;
 
-class VelocityComponent : public EntityW::Component {
+class VelocityComponent : public EntityW::Component<VelocityComponent> {
 public:
 	Vector2 velocity;
 	float bounciness;
 	VelocityComponent(Vector2 velocity, float bounciness) : velocity(velocity), bounciness(bounciness) {}
 };
 
-class RenderComponent : public EntityW::Component {
+class RenderComponent : public EntityW::Component<RenderComponent> {
 public:
 	std::shared_ptr<sf::Shape> shape;
 	RenderComponent(std::shared_ptr<sf::Shape> shape) : shape(shape) {};
 };
 
-class TextComponent : public EntityW::Component {
+class TextComponent : public EntityW::Component<TextComponent> {
 public:
 	std::string text;
 	TextComponent(std::string text) : text(text) {};
@@ -115,7 +117,7 @@ public:
 	}
 };
 
-class CollisionComponent : public EntityW::Component {
+class CollisionComponent : public EntityW::Component<CollisionComponent> {
 public:
 	Collision collision;
 	std::shared_ptr<CollisionShape> shape;
@@ -123,7 +125,7 @@ public:
 
 };
 
-class PhysicsComponent : public EntityW::Component {
+class PhysicsComponent : public EntityW::Component<PhysicsComponent> {
 public:
 	Vector2 constraints;
 	float bounciness;

@@ -4,6 +4,6 @@ namespace EntityW
 {
 	TypeId ScriptComponentTypeId()
 	{
-		return ClassTypeId<Component>::GetScriptTypeId();
+		return ClassTypeId<BaseComponent>::GetScriptTypeId();
 	}
 }

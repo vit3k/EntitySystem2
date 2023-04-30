@@ -37,7 +37,7 @@ find_package(lua 5.4 REQUIRED)
 add_executable(Pong main.cpp Collider.cpp Input.cpp
     CollisionSystem.cpp InputController.cpp PhysicsSystem.cpp RenderSystem.cpp ScriptManager.cpp
     TextRenderingSystem.cpp EntityW/Component.cpp EntityW/Entity.cpp EntityW/EventDispatcher.cpp
-    EntityW/System.cpp)
+    EntityW/System.cpp SpriteRenderSystem.cpp)
 set_property(TARGET Pong PROPERTY CXX_STANDARD 17)
 
 target_link_libraries(Pong lua::lua sol2::sol2 glm::glm sfml-system sfml-window sfml-graphics)

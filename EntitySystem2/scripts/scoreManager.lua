@@ -1,4 +1,4 @@
-return {
+local scoreManager = {
 	score = { 0, 0 },
 
 	--Collision handler for scoring surfaces
@@ -42,3 +42,5 @@ return {
 		subscribeForObject(Events.Collision, self.onScoreCollision, self)
 	end
 }
+
+return scoreManager

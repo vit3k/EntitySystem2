@@ -13,24 +13,26 @@
 #include <algorithm>
 #include "EntityW/ClassTypeId.h"
 #include "ScriptManager.h"
+#include "Animation.h"
+#include "SpriteRenderSystem.h"
 
 int main()
 {
 	auto vm = sf::VideoMode::getDesktopMode();
 	std::cout << vm.width << " x " << vm.height << std::endl;
-	sf::RenderWindow window(sf::VideoMode(1600, 1400), "Pong");
+	sf::RenderWindow window(sf::VideoMode(800, 600), "Sprite");
 	//sf::View view(sf::FloatRect(-10f, ))
 	window.setFramerateLimit(60);
 	std::shared_ptr<RenderSystem> renderSystem(new RenderSystem(&window));
 	std::shared_ptr<TextRenderingSystem> textRenderingSystem(new TextRenderingSystem(&window));
 	auto collisionSystem = std::make_shared<CollisionSystem>();
 	auto physicsSystem = std::make_shared<PhysicsSystem>();
-
+    auto spriteRenderSystem = std::make_shared<SpriteRenderSystem>(&window);
 	InputController inputController(0);
 
 	ScriptManager scriptManager;
 	scriptManager.init();
-	scriptManager.run("scripts/pong.lua");
+	scriptManager.run("scripts/sprite.lua");
 	auto fpsText = EntityW::Entity::create();
 	fpsText->attach<TransformComponent>(Vector2(-9.5, -6));
 	fpsText->attach<TextComponent>("0");
@@ -49,10 +51,6 @@ int main()
 				std::cout << "Window closed" << std::endl;
 				window.close();
 			}
-		}
-		if (!window.isOpen()) 
-		{
-			break;
 		}
 		EntityW::Time delta(timer.restart().asMicroseconds());
 		auto fps = 1. / delta.asSeconds();
@@ -76,11 +74,13 @@ int main()
 		//rendering pipeline
 		window.clear();
 		renderSystem->Process(delta);
+        spriteRenderSystem->Process(delta);
 		textRenderingSystem->Process(delta);
 		window.display();
 		
 
 	}
+	scriptManager.close();
 	std::cout << "Exit" << std::endl;
 	return 0;
 }

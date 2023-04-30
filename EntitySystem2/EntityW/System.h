@@ -59,7 +59,7 @@ namespace EntityW
 		template <class T, class... Args2>
 		ComponentList createComponentList(TypeList<T, Args2...> typeList)
 		{
-			static_assert(std::is_base_of<Component, T>::value, "Invalid component");
+			static_assert(std::is_base_of<Component<T>, T>::value, "Invalid component");
 			auto test = ComponentTypeId<T>();
 			return ComponentList().set(test) | createComponentList(TypeList<Args2...>());
 		};

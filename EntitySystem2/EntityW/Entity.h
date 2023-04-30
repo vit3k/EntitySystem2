@@ -32,6 +32,12 @@ namespace EntityW {
 		template <typename T, typename... Args>
 		std::shared_ptr<T> attach(Args... args);
 
+		void attach(ComponentSp component);
+		void attachDirect(ComponentSp component)
+		{
+			attach(component);
+		};
+
 		template <typename T>
 		std::shared_ptr<T> get();
 
@@ -63,7 +69,7 @@ namespace EntityW {
 		sol::object scriptGet(TypeId component, sol::this_state s);
 		void scriptAttach(TypeId componentId, sol::table component);
 		void scriptDetach(TypeId componentId);
-
+		
 		static void clear()
 		{
 			//EventDispatcher::get().emitNow<ClearWorldEvent>();
@@ -80,7 +86,7 @@ namespace EntityW {
 	template <typename T, typename... Args>
 	std::shared_ptr<T> Entity::attach(Args... args)
 	{
-		static_assert(std::is_base_of<Component, T>(), "T is not a component, cannot add T to entity");
+		static_assert(std::is_base_of<Component<T>, T>(), "T is not a component, cannot add T to entity");
 		auto component = std::make_shared<T>(std::forward<Args>(args)...);
 		components[ComponentTypeId<T>()] = component;
 		componentList.set(ComponentTypeId<T>());
@@ -93,7 +99,7 @@ namespace EntityW {
 	template<typename T>
 	std::shared_ptr<T> Entity::get()
 	{
-		static_assert(std::is_base_of<Component, T>(), "T is not a component, cannot get it from entity");
+		static_assert(std::is_base_of<Component<T>, T>(), "T is not a component, cannot get it from entity");
 		return std::static_pointer_cast<T>(components[ComponentTypeId<T>()]);
 	}
 

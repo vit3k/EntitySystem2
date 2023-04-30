@@ -20,6 +20,7 @@ public:
 	void subscribe(EntityW::TypeId eventTypeId, sol::function listener);
 	void subscribe(EntityW::TypeId eventTypeId, sol::function listener, sol::table self);
 	EntityW::EntitySp createEntity(sol::table entityData);
+    EntityW::EntitySp createEntityDirect(sol::table entityData);
 	void init();
 	Vector2 glmNormalize(Vector2 vec);
 	void run(std::string name);

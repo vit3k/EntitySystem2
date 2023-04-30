@@ -5,6 +5,7 @@
 #include "EntityW/ClassTypeId.h"
 #include <algorithm>
 #include "Input.h"
+#include "Animation.h"
 
 ScriptManager::ScriptManager()
 {
@@ -48,6 +49,16 @@ void ScriptManager::subscribe(EntityW::TypeId eventTypeId, sol::function listene
 	EntityW::EventDispatcher::get().scriptSubscribe(eventTypeId, listener, self);
 }
 
+EntityW::EntitySp ScriptManager::createEntityDirect(sol::table entityData)
+{
+    auto entity = EntityW::Entity::create();
+    entityData.for_each([entity, this](sol::object key, sol::object value) {
+        auto component = value.as<EntityW::ComponentSp>();
+        entity->attach(component);
+    });
+    entity->commit();
+    return entity;
+}
 EntityW::EntitySp ScriptManager::createEntity(sol::table entityData)
 {
 	auto entity = EntityW::Entity::create();
@@ -104,6 +115,11 @@ EntityW::EntitySp ScriptManager::createEntity(sol::table entityData)
 			auto table = value.as<sol::table>();
 			entity->attach<PhysicsComponent>(table["bounciness"], table["mass"], Vector2(table["constraints"]["x"], table["constraints"]["y"]));
 		}
+		else if (componentName == "animatedSprite")
+		{
+			auto table = value.as<sol::table>();
+			
+		}
 		else
 		{
 			auto componentNameCase = componentName;
@@ -130,12 +146,13 @@ void ScriptManager::init()
 		"y", &Vector2::y
 		);
 
-	lua.new_usertype<EntityW::Component>("Component");
-
+	//lua.new_usertype<EntityW::Component>("Component");
+	
 	lua.new_usertype<TransformComponent>("TransformComponent",
-		sol::constructors<TransformComponent(Vector2)>(),
+		//sol::constructors<TransformComponent(Vector2)>(),
+		sol::factories(TransformComponent::create),
 		"position", &TransformComponent::position,
-		sol::base_classes, sol::bases<EntityW::Component>()
+		sol::base_classes, sol::bases<EntityW::Component<TransformComponent>>()
 		);
 
 	lua.new_usertype<EntityW::Entity>("Entity",
@@ -144,13 +161,14 @@ void ScriptManager::init()
 		"get", &EntityW::Entity::scriptGet,
 		"has", &EntityW::Entity::scriptHas,
 		"attach", &EntityW::Entity::scriptAttach,
-		"detach", &EntityW::Entity::scriptDetach
+		"detach", &EntityW::Entity::scriptDetach,
+		"attachDirect", &EntityW::Entity::attachDirect
 		);
 
 	lua.new_usertype<TextComponent>("TextComponent",
 		sol::constructors<TextComponent(std::string)>(),
 		"text", &TextComponent::text,
-		sol::base_classes, sol::bases<EntityW::Component>()
+		sol::base_classes, sol::bases<EntityW::Component<TextComponent>>()
 		);
 
 	lua.new_usertype<Collision>("Collision",
@@ -188,7 +206,7 @@ void ScriptManager::init()
 
 	lua.new_usertype<RenderComponent>("RenderComponent",
 		sol::constructors<RenderComponent(std::shared_ptr<sf::Shape>)>(),
-		sol::base_classes, sol::bases<EntityW::Component>()
+		sol::base_classes, sol::bases<EntityW::Component<RenderComponent>>()
 
 		);
 
@@ -196,7 +214,7 @@ void ScriptManager::init()
 		sol::constructors<VelocityComponent(Vector2, float)>(),
 		"velocity", &VelocityComponent::velocity,
 		"bounciness", &VelocityComponent::bounciness,
-		sol::base_classes, sol::bases<EntityW::Component>()
+		sol::base_classes, sol::bases<EntityW::Component<VelocityComponent>>()
 		);
 
 	lua.new_usertype<CollisionShape>("CollisionShape");
@@ -217,7 +235,7 @@ void ScriptManager::init()
 	lua.new_usertype<CollisionComponent>("CollisionComponent",
 		sol::constructors<CollisionComponent(std::shared_ptr<CollisionShape>)>(),
 		"shape", &CollisionComponent::shape,
-		sol::base_classes, sol::bases<EntityW::Component>()
+		sol::base_classes, sol::bases<EntityW::Component<CollisionComponent>>()
 		);
 
 	lua.new_usertype<PhysicsComponent>("PhysicsComponent",
@@ -226,8 +244,23 @@ void ScriptManager::init()
 		"bounciness", &PhysicsComponent::bounciness,
 		"mass", &PhysicsComponent::mass,
 		"invertedMass", &PhysicsComponent::invertedMass,
-		sol::base_classes, sol::bases<EntityW::Component>()
+		sol::base_classes, sol::bases<EntityW::Component<PhysicsComponent>>()
 		);
+
+	lua.new_usertype<SpriteSheet>("SpriteSheet",
+		//sol::constructors<SpriteSheet(std::string, int, int)>(),
+		sol::factories(SpriteSheet::create),
+		"load", &SpriteSheet::load
+	);
+
+	lua.new_usertype<SpriteComponent>("SpriteComponent", 
+		sol::factories(SpriteComponent::create),
+        "scale", &SpriteComponent::scale,
+		sol::base_classes, sol::bases<EntityW::Component<SpriteComponent>>()
+	);
+
+	//lua["loadSpriteSheet"] = [](std::string path, int frameWidth, int frameHeight) -> std::shared_ptr<SpriteSheet> { return std::make_shared<SpriteSheet>(path, frameWidth, frameHeight); };
+
 
 	lua.new_enum("sfColor",
 		"Green", sf::Color::Green,
@@ -259,7 +292,8 @@ void ScriptManager::init()
 		"Render", EntityW::ComponentTypeId<RenderComponent>(),
 		"Collision", EntityW::ComponentTypeId<CollisionComponent>(),
 		"Physics", EntityW::ComponentTypeId<PhysicsComponent>(),
-		"Velocity", EntityW::ComponentTypeId<VelocityComponent>()
+		"Velocity", EntityW::ComponentTypeId<VelocityComponent>(),
+		"Sprite", EntityW::ComponentTypeId<SpriteComponent>()
 	);
 
 	auto metatable = lua.create_table();
@@ -269,9 +303,9 @@ void ScriptManager::init()
 	lua.new_usertype<EntityW::Time>("Time",
 			"asSeconds", &EntityW::Time::asSeconds
 		);
-	/*lua.new_usertype<Input>("Input",
+	lua.new_usertype<Input>("Input",
 		"isKeyPressed", &Input::isKeyPressed
-	);*/
+	);
 	lua.new_enum("Key",
 		"Up", sf::Keyboard::Key::Up,
 		"Down", sf::Keyboard::Key::Down,
@@ -286,6 +320,7 @@ void ScriptManager::init()
 	});
 
 	lua.set_function("internal_createEntity", &ScriptManager::createEntity, this);
+    lua.set_function("internal_createEntityDirect", &ScriptManager::createEntityDirect, this);
 	lua.set_function("internal_subscribe", sol::resolve<void(EntityW::TypeId, sol::function)>(&ScriptManager::subscribe), this);
 	lua.set_function("internal_subscribeForObject", sol::resolve<void(EntityW::TypeId, sol::function, sol::table)>(&ScriptManager::subscribe), this);
 	lua.set_function("internal_registerSystem", &ScriptManager::registerSystem, this);

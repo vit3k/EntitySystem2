@@ -18,6 +18,10 @@ function createEntity(definition)
 	return internal_createEntity(definition)
 end
 
+function createEntityDirect(definition)
+	return internal_createEntityDirect(definition)
+end
+
 function registerSystem(system)
 	return internal_registerSystem(system)
 end

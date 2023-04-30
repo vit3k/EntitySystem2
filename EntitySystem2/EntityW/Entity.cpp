@@ -37,6 +37,17 @@ namespace EntityW {
 		}
 	}
 
+	void Entity::attach(ComponentSp component)
+	{
+		std::cout << "Attaching component " << component->getTypeId() << " to entity " << id << std::endl;
+		components[component->getTypeId()] = component;
+		componentList.set(component->getTypeId());
+		if (commited)
+		{
+			EventDispatcher::get().emitNow<ComponentAttachedEvent>(thisPtr, component);
+		}
+	}
+
 	bool Entity::scriptHas(TypeId component)
 	{
 		return componentList[component];
@@ -59,7 +70,7 @@ namespace EntityW {
 			}
 		}
 	}
-
+	
 	void Entity::scriptDetach(TypeId componentId)
 	{
 		componentList.reset(componentId);
