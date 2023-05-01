@@ -6,6 +6,7 @@
 #include <algorithm>
 #include "Input.h"
 #include "Animation.h"
+#include "Engine.h"
 
 ScriptManager::ScriptManager()
 {
@@ -53,8 +54,23 @@ EntityW::EntitySp ScriptManager::createEntityDirect(sol::table entityData)
 {
     auto entity = EntityW::Entity::create();
     entityData.for_each([entity, this](sol::object key, sol::object value) {
-        auto component = value.as<EntityW::ComponentSp>();
-        entity->attach(component);
+
+        //if (value.is<EntityW::ComponentSp>())
+        //{
+            auto component = value.as<EntityW::ComponentSp>();
+            entity->attach(component);
+        //}
+        /*else
+        {
+            auto componentName = key.as<std::string>();
+            auto componentNameCase = componentName;
+            componentNameCase[0] = toupper(componentNameCase[0]);
+            if (scriptComponentsMap.find(componentNameCase) == scriptComponentsMap.end())
+            {
+                registerComponent(lua["internal_Components"], componentNameCase);
+            }
+            entity->scriptAttach(scriptComponentsMap[componentNameCase], value.as<sol::object>());
+        }*/
     });
     entity->commit();
     return entity;
@@ -115,10 +131,14 @@ EntityW::EntitySp ScriptManager::createEntity(sol::table entityData)
 			auto table = value.as<sol::table>();
 			entity->attach<PhysicsComponent>(table["bounciness"], table["mass"], Vector2(table["constraints"]["x"], table["constraints"]["y"]));
 		}
-		else if (componentName == "animatedSprite")
+		else if (componentName == "sprite")
 		{
+            logger.log("creating sprite");
 			auto table = value.as<sol::table>();
-			
+			auto spriteComponent = SpriteComponent::create(table["path"]);
+            spriteComponent->scale.x = table["scale"]["x"];
+            spriteComponent->scale.y = table["scale"]["y"];
+            entity->attach(spriteComponent);
 		}
 		else
 		{
@@ -303,14 +323,17 @@ void ScriptManager::init()
 	lua.new_usertype<EntityW::Time>("Time",
 			"asSeconds", &EntityW::Time::asSeconds
 		);
-	lua.new_usertype<Input>("Input",
-		"isKeyPressed", &Input::isKeyPressed
+	lua.new_usertype<Input>("internal_Input",
+        "isActionPressed", &Input::isActionPressed,
+        "mapAction", &Input::mapAction
 	);
-	lua.new_enum("Key",
+	lua["internal_Key"] = lua.create_table_with(
 		"Up", sf::Keyboard::Key::Up,
 		"Down", sf::Keyboard::Key::Down,
 		"W", sf::Keyboard::Key::W,
-		"S", sf::Keyboard::Key::S);
+		"S", sf::Keyboard::Key::S,
+        "A", sf::Keyboard::Key::A,
+        "D", sf::Keyboard::Key::D);
 
 	sol::table glmTable = lua.create_named_table("glm");
 	glmTable.set_function("normalize", &ScriptManager::glmNormalize, this);
@@ -344,6 +367,8 @@ void ScriptManager::init()
 	lua.new_usertype<LaunchBallEvent>("LaunchBallEvent",
 		"controller", &LaunchBallEvent::controller
 	);
+
+    lua.set_function("internal_EngineInit", &ScriptManager::engineInit, this);
 }
 
 void ScriptManager::run(std::string name)
@@ -391,4 +416,15 @@ void ScriptManager::emit(EntityW::TypeId type, sol::object data)
 void ScriptManager::close()
 {
 	lua.stack_clear();
+}
+
+void ScriptManager::engineInit(sol::table config) {
+    //auto configuration = config.as<Configuration>();
+    Configuration configuration;
+    configuration.frameLimit = config["frameLimit"];
+    configuration.window.width = config["window"]["width"];
+    configuration.window.height = config["window"]["height"];
+    configuration.window.title = config["window"]["title"];
+
+    Engine::getInstance()->init(configuration);
 }

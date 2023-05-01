@@ -56,7 +56,7 @@ namespace EntityW {
 		}
 		else if (script["processEntity"].valid())
 		{
-			for (auto entity : entities)
+			for (const auto& entity : entities)
 			{
 				script["processEntity"](script, entity.second, deltaTime);
 			}

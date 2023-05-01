@@ -9,6 +9,6 @@ void SpriteRenderSystem::Process(EntityW::Time deltaTime)
 		auto projectedPosition = Vector2((transform->position.x + 10) * 40, (transform->position.y + 7.5) * 40);
 		sprite->sprite->setPosition(projectedPosition.x, projectedPosition.y);
         sprite->sprite->setScale(sprite->scale.x, sprite->scale.y);
-        renderWindow->draw(*sprite->sprite);
+        renderTarget->draw(*(sprite->sprite));
 	}
 }

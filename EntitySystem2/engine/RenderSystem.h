@@ -3,10 +3,10 @@
 #include "EntityW/System.h"
 
 class RenderSystem : public EntityW::System<RenderComponent, TransformComponent> {
-	sf::RenderWindow* renderWindow;
+	std::shared_ptr<sf::RenderTarget> renderTarget;
 protected:
 	virtual std::string getName() { return "RenderSystem"; }
 public:
 	void virtual Process(EntityW::Time deltaTime);
-	RenderSystem(sf::RenderWindow* renderWindow) : renderWindow(renderWindow) {};
+	RenderSystem(std::shared_ptr<sf::RenderTarget> renderTarget) : renderTarget(renderTarget) {};
 };

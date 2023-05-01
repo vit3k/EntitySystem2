@@ -53,11 +53,12 @@ public:
 
 class Animation
 {
+public:
 	std::string name;
 	int fps;
 	std::vector<int> frames;
 	std::shared_ptr<SpriteSheet> spriteSheet;
-public:
+
 	Animation(std::string name, int fps, std::shared_ptr<SpriteSheet> spriteSheet, std::vector<int> frames) 
 		: name(name), fps(fps), spriteSheet(spriteSheet), frames(frames) {};
 

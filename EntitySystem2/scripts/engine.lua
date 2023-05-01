@@ -33,3 +33,24 @@ end
 function clearWorld()
 	internal_clearWorld()
 end
+
+Key = {
+	A = internal_Key.A,
+	D = internal_Key.D
+}
+setmetatable(Key, {__index = internal_Key})
+
+Input = {
+	mapAction = function(actionName, key)
+		internal_Input.mapAction(actionName, key)
+	end,
+	isActionPressed = function(actionName)
+		return internal_Input.isActionPressed(actionName)
+	end
+}
+
+Engine = {
+	init = function(config)
+		internal_EngineInit(config)
+	end
+}

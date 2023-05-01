@@ -11,6 +11,6 @@ void RenderSystem::Process(EntityW::Time deltaTime)
 		auto projectedPosition = Vector2((transform->position.x + 10) * 40, (transform->position.y + 7.5) * 40);
 		shape->setPosition(projectedPosition.x, projectedPosition.y);
 		shape->setScale(40, 40);
-		renderWindow->draw(*shape);
+		renderTarget->draw(*shape);
 	}
 }

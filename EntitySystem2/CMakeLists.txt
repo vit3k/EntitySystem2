@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(Pong VERSION 0.1.0)
+project(Engine VERSION 0.1.0)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR})
 list(APPEND CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR})
 
-if(NOT DEFINED ${CMAKE_BUILD_TYPE})
-    set(CMAKE_BUILD_TYPE Release)
-endif()
+#if(NOT DEFINED ${CMAKE_BUILD_TYPE})
+#    set(CMAKE_BUILD_TYPE Release)
+#endif()
 
 if(NOT EXISTS "${CMAKE_BINARY_DIR}/conan.cmake")
   message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
@@ -34,10 +34,10 @@ find_package(sol2 3.2 REQUIRED)
 find_package(glm 0.9 REQUIRED)
 find_package(lua 5.4 REQUIRED)
 
-add_executable(Pong main.cpp Collider.cpp Input.cpp
-    CollisionSystem.cpp InputController.cpp PhysicsSystem.cpp RenderSystem.cpp ScriptManager.cpp
-    TextRenderingSystem.cpp EntityW/Component.cpp EntityW/Entity.cpp EntityW/EventDispatcher.cpp
-    EntityW/System.cpp SpriteRenderSystem.cpp)
-set_property(TARGET Pong PROPERTY CXX_STANDARD 17)
+add_executable(Engine main.cpp engine/Collider.cpp engine/Input.cpp
+        engine/CollisionSystem.cpp engine/InputController.cpp engine/PhysicsSystem.cpp engine/RenderSystem.cpp engine/ScriptManager.cpp
+        engine/TextRenderingSystem.cpp engine/EntityW/Component.cpp engine/EntityW/Entity.cpp engine/EntityW/EventDispatcher.cpp
+        engine/EntityW/System.cpp engine/SpriteRenderSystem.cpp engine/Engine.cpp engine/Engine.h)
+set_property(TARGET Engine PROPERTY CXX_STANDARD 17)
 
-target_link_libraries(Pong lua::lua sol2::sol2 glm::glm sfml-system sfml-window sfml-graphics)
+target_link_libraries(Engine lua::lua sol2::sol2 glm::glm sfml-system sfml-window sfml-graphics)

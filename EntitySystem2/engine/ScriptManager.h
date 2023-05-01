@@ -31,4 +31,5 @@ public:
 	EntityW::TypeId registerEvent(sol::table table, std::string name);
 	void emit(EntityW::TypeId type, sol::object data);
 	void close();
+    void engineInit(sol::table config);
 };
