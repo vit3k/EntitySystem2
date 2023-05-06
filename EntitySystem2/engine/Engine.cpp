@@ -17,9 +17,13 @@
 
 std::shared_ptr<Engine> Engine::instance;
 
-void Engine::start(std::string mainScriptPath) {
-    scriptManager.init();
-    scriptManager.run(mainScriptPath);
+void Engine::start(std::shared_ptr<IScriptManager> scriptManager) {
+    this->scriptManager = scriptManager;
+    scriptManager->init();
+    if (!initialized) {
+        init(Configuration());
+    }
+    log.log("Engine started...");
     run();
 }
 
@@ -51,7 +55,7 @@ void Engine::run()
         EntityW::EventDispatcher::get().process();
 
         // systems from lua
-        scriptManager.process(delta);
+        //scriptManager->process(delta);
 
         // event bus after scripts
         EntityW::EventDispatcher::get().process();
@@ -67,7 +71,7 @@ void Engine::run()
         textRenderingSystem->Process(delta);
         window->display();
     }
-    scriptManager.close();
+    //scriptManager->close();
     std::cout << "Exit" << std::endl;
 }
 
@@ -91,4 +95,5 @@ void Engine::init(Configuration config) {
     physicsSystem = std::make_shared<PhysicsSystem>();
 
     EntityW::EventDispatcher::get().emitNow<StartedEvent>();
+    initialized = true;
 }

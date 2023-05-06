@@ -43,6 +43,8 @@ namespace EntityW {
 
 	typedef fastdelegate::FastDelegate1<EventSp> EventListenerDelegate;
 	typedef std::map<TypeId, std::vector<EventListenerDelegate>> EventListenersMap;
+    typedef void ( *native_engine_event_callback)(std::shared_ptr<EntityW::BaseEvent>);
+
 	class EventDispatcher
 	{
 		std::vector<EventSp> queues[2];
@@ -53,6 +55,7 @@ namespace EntityW {
 		EventListenersMap listeners;
 		std::map<TypeId, std::vector<std::pair<sol::table, sol::function>>> scriptListenersWithTable;
 		std::map<TypeId, std::vector<sol::function>> scriptListeners;
+        std::map<TypeId, std::vector<native_engine_event_callback>> dotnetListeners;
 
 		EventDispatcher() {};
 //		Logger logger = Logger::get("EventDispatcher");
@@ -92,6 +95,13 @@ namespace EntityW {
 					listener.second(listener.first, e);
 				}
 			}
+            if (dotnetListeners.find(e->getTypeId()) != dotnetListeners.end())
+            {
+                for (auto listener : dotnetListeners[e->getTypeId()])
+                {
+                    listener(e);
+                }
+            }
 		}
 
 		template<class T>
@@ -105,6 +115,7 @@ namespace EntityW {
 			listeners[type].push_back(listener);
 		}
 
+        void subscribe(TypeId eventTypeId, native_engine_event_callback callback);
 		void scriptSubscribe(TypeId eventTypeId, sol::function listener, sol::table self);
 		void scriptSubscribe(TypeId eventTypeId, sol::function listener);
 

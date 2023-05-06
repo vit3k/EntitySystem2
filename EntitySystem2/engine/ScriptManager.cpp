@@ -8,11 +8,6 @@
 #include "Animation.h"
 #include "Engine.h"
 
-ScriptManager::ScriptManager()
-{
-}
-
-
 ScriptManager::~ScriptManager()
 {
 }
@@ -369,6 +364,8 @@ void ScriptManager::init()
 	);
 
     lua.set_function("internal_EngineInit", &ScriptManager::engineInit, this);
+
+	run(mainScript);
 }
 
 void ScriptManager::run(std::string name)
@@ -394,11 +391,6 @@ void ScriptManager::process(EntityW::Time deltaTime)
 	{
 		system->Process(deltaTime);
 	}
-}
-
-sol::object ScriptManager::importModule(std::string modulePath)
-{
-	return lua.require_file(modulePath, "scripts/" + modulePath + ".lua", false);
 }
 
 void ScriptManager::clearWorld()

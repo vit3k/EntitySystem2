@@ -5,16 +5,18 @@
 #include <memory>
 #include "EntityW/System.h"
 #include "EntityW/ClassTypeId.h"
+#include "IScriptManager.h"
 
-class ScriptManager
+class ScriptManager : public IScriptManager
 {
 private:
 	std::map<std::string, EntityW::TypeId> scriptComponentsMap;
 	sol::state lua;
 	std::vector<std::shared_ptr<EntityW::ScriptSystem>> systems;
 	Logger logger = Logger::get("ScriptManager");
+	std::string mainScript;
 public:
-	ScriptManager();
+	ScriptManager(std::string mainScript): mainScript(mainScript) {};
 	~ScriptManager();
 	EntityW::TypeId registerComponent(sol::table table, std::string name);
 	void subscribe(EntityW::TypeId eventTypeId, sol::function listener);
@@ -26,7 +28,6 @@ public:
 	void run(std::string name);
 	sol::table registerSystem(sol::table script);
 	void process(EntityW::Time deltaTime);
-	sol::object importModule(std::string modulePath);
 	void clearWorld();
 	EntityW::TypeId registerEvent(sol::table table, std::string name);
 	void emit(EntityW::TypeId type, sol::object data);

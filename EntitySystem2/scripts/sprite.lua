@@ -4,7 +4,7 @@ Engine.init({
     window = {
         width = 800,
         height = 600,
-        title = 'Test'
+        title = 'test'
     },
     frameLimit = 60
 })
@@ -15,7 +15,7 @@ Input.mapAction('Right', Key.D);
 registerSystem({
     name = 'InputSystem',
     requiredComponents = { Components.Input, Components.Transform },
-    processEntity = function(self, entity, deltaTime)
+    processEntity = function(self, entity, deltaTime)      
         local transform = entity:get(Components.Transform)
         if Input.isActionPressed('Left') then
             transform.position.x = transform.position.x - 10 * deltaTime:asSeconds()

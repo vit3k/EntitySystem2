@@ -12,21 +12,12 @@
 #include "SpriteRenderSystem.h"
 #include "CollisionSystem.h"
 #include "PhysicsSystem.h"
-
-struct WindowConfiguration {
-    int width = 800;
-    int height = 600;
-    std::string title = "Engine";
-};
-struct Configuration {
-    WindowConfiguration window;
-    int frameLimit = 60;
-};
+#include "Configuration.h"
 
 class Engine {
 private:
     static std::shared_ptr<Engine> instance;
-    ScriptManager scriptManager;
+    std::shared_ptr<IScriptManager> scriptManager;
     Engine() {};
     std::shared_ptr<sf::RenderWindow> window;
     std::shared_ptr<RenderSystem> renderSystem;
@@ -34,10 +25,12 @@ private:
     std::shared_ptr<SpriteRenderSystem> spriteRenderSystem;
     std::shared_ptr<CollisionSystem> collisionSystem;
     std::shared_ptr<PhysicsSystem> physicsSystem;
+    Logger log = Logger::get("Engine");
+    bool initialized = false;
 public:
     static std::shared_ptr<Engine> getInstance();
     void run();
-    void start(std::string mainScriptPath);
+    void start(std::shared_ptr<IScriptManager> scriptManager);
     void init(Configuration config);
 };
 

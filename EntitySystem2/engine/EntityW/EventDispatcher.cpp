@@ -81,6 +81,15 @@ namespace EntityW {
 			currentScriptQueue = 0;
 	}
 
+    void EventDispatcher::subscribe(TypeId eventTypeId, native_engine_event_callback callback)
+    {
+        if (dotnetListeners.find(eventTypeId) == dotnetListeners.end())
+        {
+            dotnetListeners[eventTypeId] = std::vector<native_engine_event_callback>();
+        }
+        dotnetListeners[eventTypeId].push_back(callback);
+    }
+
 	void EventDispatcher::scriptSubscribe(TypeId eventTypeId, sol::function listener, sol::table self)
 	{
 		if (scriptListenersWithTable.find(eventTypeId) == scriptListenersWithTable.end())

@@ -34,10 +34,17 @@ find_package(sol2 3.2 REQUIRED)
 find_package(glm 0.9 REQUIRED)
 find_package(lua 5.4 REQUIRED)
 
+add_library(nethost SHARED IMPORTED) # or STATIC instead of SHARED
+set_target_properties(nethost PROPERTIES
+  IMPORTED_LOCATION "/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Host.osx-arm64/7.0.5/runtimes/osx-arm64/native/libnethost.dylib"
+  INTERFACE_INCLUDE_DIRECTORIES "/usr/local/share/dotnet/packs/Microsoft.NETCore.App.Host.osx-arm64/7.0.5/runtimes/osx-arm64/native"
+)
+
 add_executable(Engine main.cpp engine/Collider.cpp engine/Input.cpp
         engine/CollisionSystem.cpp engine/InputController.cpp engine/PhysicsSystem.cpp engine/RenderSystem.cpp engine/ScriptManager.cpp
         engine/TextRenderingSystem.cpp engine/EntityW/Component.cpp engine/EntityW/Entity.cpp engine/EntityW/EventDispatcher.cpp
-        engine/EntityW/System.cpp engine/SpriteRenderSystem.cpp engine/Engine.cpp engine/Engine.h)
+        engine/EntityW/System.cpp engine/SpriteRenderSystem.cpp engine/Engine.cpp engine/Engine.h engine/DotnetScriptManager.cpp)
 set_property(TARGET Engine PROPERTY CXX_STANDARD 17)
 
-target_link_libraries(Engine lua::lua sol2::sol2 glm::glm sfml-system sfml-window sfml-graphics)
+target_link_libraries(Engine lua::lua sol2::sol2 glm::glm sfml-system sfml-window sfml-graphics nethost)
+target_include_directories(Engine PRIVATE engine/inc)
