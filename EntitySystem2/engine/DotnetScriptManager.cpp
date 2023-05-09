@@ -1,4 +1,6 @@
 #include "DotnetScriptManager.h"
+
+#include <memory>
 #include "Configuration.h"
 #include "Engine.h"
 #include "Input.h"
@@ -89,24 +91,7 @@ void DotnetScriptManager::init()
     load_assembly_and_get_function_pointer = get_dotnet_load_assembly(config_path.c_str());
     assert(load_assembly_and_get_function_pointer != nullptr && "Failure: get_dotnet_load_assembly()");
 
-    //
     // STEP 3: Load managed assembly and get function pointer to a managed method
-    //
-
-    // <SnippetLoadAndGet>
-    // Function pointer to managed delegate
-    //component_entry_point_fn hello = nullptr;
-    //int rc = load_assembly_and_get_function_pointer(
-    //    dotnetlib_path.c_str(),
-    //    dotnet_type,
-    //    dotnet_type_method,
-    //    nullptr /*delegate_type_name*/,
-    //    nullptr,
-     //   (void**)&hello);
-    // </SnippetLoadAndGet>
-    //assert(rc == 0 && hello != nullptr && "Failure: load_assembly_and_get_function_pointer()");
-
-
     const string_t dotnetlib_path = "dotnet/bin/Debug/dotnet.dll";
     const char_t *dotnet_type = (initClass + ", dotnet").c_str();
 
@@ -115,21 +100,10 @@ void DotnetScriptManager::init()
         dotnet_type,
         initMethod.c_str() /*method_name*/,
         //UNMANAGEDCALLERSONLY_METHOD,
-        STR("engine.NativeEngine+InitDelegate, dotnet") /*delegate_type_name*/,
+        STR("engine.Engine+InitDelegate, dotnet") /*delegate_type_name*/,
         nullptr,
         (void**)&native_engine_init);
     assert(rc == 0 && native_engine_init != nullptr && "Failure: load_assembly_and_get_function_pointer()");
-
-    /*lib_args args
-        {
-            STR("from host!"),
-            5
-        };*/
-    //for (int i = 0; i < 3; ++i)
-    //{
-    //    native_engine_init();
-        //printf("C++ host: %d\n", args.number);
-    //}
 
     native_engine_init();
 }
@@ -145,10 +119,6 @@ void DotnetScriptManager::close()
 }
 
 #define ENGINE_API extern "C" __attribute__((visibility("default")))
-
-ENGINE_API void test() {
-    printf("test\n");
-}
 
 ENGINE_API void init(Configuration config) {
     Engine::getInstance()->init(config);
@@ -180,7 +150,47 @@ ENGINE_API ComponentTypeIds getComponentTypeIds()
     };
 }
 
-ENGINE_API EntityW::EntitySp createEntity()
+ENGINE_API EntityW::Entity* entity_Create()
 {
-    return EntityW::Entity::create();
+    auto entity = EntityW::Entity::create();
+    return entity.get();
+}
+
+ENGINE_API int entity_GetId(EntityW::Entity* entity)
+{
+    return entity->id;
+}
+
+TransformComponent* transformComponent;
+ENGINE_API void entity_Attach(EntityW::Entity* entity, EntityW::BaseComponent* component)
+{
+    entity->attach(EntityW::ComponentSp(component));
+}
+
+ENGINE_API TransformComponent* transformComponent_Create(Vector2 position)
+{
+    return new TransformComponent(position);
+}
+
+ENGINE_API EntityW::BaseComponent* entity_GetComponent(EntityW::Entity* entity, int componentId)
+{
+    printf("Get componentid %d\n", componentId);
+    return entity->get(componentId).get();
+}
+
+ENGINE_API SpriteComponent* spriteComponent_Create(char* path)
+{
+    auto sprite = new SpriteComponent(path);
+    sprite->load();
+    return sprite;
+}
+
+ENGINE_API void entity_Commit(EntityW::Entity* entity)
+{
+    entity->commit();
+}
+
+ENGINE_API bool entity_Has(EntityW::Entity* entity, int componentId)
+{
+    return entity->has(componentId);
 }

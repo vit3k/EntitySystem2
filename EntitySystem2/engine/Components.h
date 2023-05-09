@@ -13,6 +13,7 @@ enum ShapeType {
 class TransformComponent : public EntityW::Component<TransformComponent> {
 public:
 	Vector2 position;
+
 	TransformComponent(Vector2 position) : position(position) {}
 	static std::shared_ptr<TransformComponent> create(Vector2 position) {
 		return std::make_shared<TransformComponent>(position);

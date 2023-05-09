@@ -41,19 +41,26 @@ namespace EntityW {
 		template <typename T>
 		std::shared_ptr<T> get();
 
+        ComponentSp get(TypeId type);
+
 		//sol::objecty
 		bool hasComponents(ComponentList componentList);
 		template <typename T>
 		bool has() {
 			return componentList[ComponentTypeId<T>()];
 		}
+
+        bool has(TypeId id) {
+            return componentList[id];
+        }
+
 		long id;
 		Entity() {
 			id = getNextEntityId();
 		};
 
 		static std::shared_ptr<Entity> create() {
-			auto entity = std::make_shared<Entity>();
+			auto entity = std::shared_ptr<Entity>(new Entity());
 			entity->setPointer(entity);
 			return entity;
 		}

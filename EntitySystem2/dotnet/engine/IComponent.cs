@@ -2,5 +2,6 @@ namespace engine;
 
 public interface IComponent
 {
-    public int GetId();
+    public IntPtr Instance { get; set; }
+    public int Id { get; }
 }

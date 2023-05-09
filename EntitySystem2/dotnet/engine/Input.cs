@@ -1,14 +1,21 @@
+using System.Runtime.InteropServices;
+
 namespace engine;
 
 public class Input {
     public static void MapAction(string action, Key key) {
-        NativeEngine.input_mapAction(action, key);
+        input_mapAction(action, key);
     }
 
     public static bool IsActionPressed(string action)
     {
-        return NativeEngine.input_isActionPressed(action);
+        return input_isActionPressed(action);
     }
+    
+    [DllImport("engine", CharSet = CharSet.Ansi, SetLastError = true)]
+    private static extern void input_mapAction(string action, Key key);
+    [DllImport("engine", CharSet = CharSet.Ansi, SetLastError = true)]
+    private static extern bool input_isActionPressed(string action);
 }
 
 public enum Key

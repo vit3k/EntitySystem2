@@ -85,13 +85,13 @@ public:
 
 class SpriteComponent : public EntityW::Component<SpriteComponent>
 {
-private:
-	std::shared_ptr<sf::Texture> texture;
-	std::string path;
-	SpriteComponent(std::string path): path(path) {};
 public:
-	std::shared_ptr<sf::Sprite> sprite;
     Vector2 scale;
+    std::shared_ptr<sf::Sprite> sprite;
+    SpriteComponent(std::string path): path(path) {
+        scale.x = 1.0f;
+        scale.y = 1.0f;
+    };
 	void load()
 	{
 		texture = std::make_shared<sf::Texture>();
@@ -107,6 +107,12 @@ public:
 		spriteComponent->load();
 		return spriteComponent;
 	}
-	
+    ~SpriteComponent()
+    {
+        printf("Deleting sprite component\n");
+    }
+private:
+    std::shared_ptr<sf::Texture> texture;
+    std::string path;
 };
 

@@ -39,8 +39,10 @@ namespace EntityW {
 
 	void Entity::attach(ComponentSp component)
 	{
-		std::cout << "Attaching component " << component->getTypeId() << " to entity " << id << std::endl;
-		components[component->getTypeId()] = component;
+        printf("%d\n", component.get());
+		std::cout << "Attaching component " << component.get() << " " << component->getTypeId() << " to entity " << id << std::endl;
+
+        components[component->getTypeId()] = component;
 		componentList.set(component->getTypeId());
 		if (commited)
 		{
@@ -81,4 +83,8 @@ namespace EntityW {
 			EventDispatcher::get().emitNow<ScriptComponentDetachedEvent>(thisPtr);
 		}
 	}
+
+    ComponentSp Entity::get(TypeId type) {
+        return components[type];
+    }
 }
