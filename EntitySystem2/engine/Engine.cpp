@@ -20,19 +20,21 @@ std::shared_ptr<Engine> Engine::instance;
 void Engine::start(std::shared_ptr<IScriptManager> scriptManager) {
     this->scriptManager = scriptManager;
     scriptManager->init();
+
     if (!initialized) {
         init(Configuration());
     }
     log.log("Engine started...");
+    EntityW::EventDispatcher::get().emitNow<StartedEvent>();
     run();
 }
 
 void Engine::run()
 {
-    auto fpsText = EntityW::Entity::create();
+    /*auto fpsText = EntityW::Entity::create();
     fpsText->attach<TransformComponent>(Vector2(-9.5, -7));
     fpsText->attach<TextComponent>("0");
-    fpsText->commit();
+    fpsText->commit();*/
 
     // Main loop
     sf::Clock timer;
@@ -48,14 +50,14 @@ void Engine::run()
             }
         }
         EntityW::Time delta(timer.restart().asMicroseconds());
-        auto fps = 1. / delta.asSeconds();
-        fpsText->get<TextComponent>()->text = std::to_string(fps);
+        //auto fps = 1. / delta.asSeconds();
+        //fpsText->get<TextComponent>()->text = std::to_string(fps);
 
         //event bus before scripts
         EntityW::EventDispatcher::get().process();
 
         // systems from lua
-        //scriptManager->process(delta);
+        scriptManager->process(delta);
 
         // event bus after scripts
         EntityW::EventDispatcher::get().process();
@@ -71,7 +73,7 @@ void Engine::run()
         textRenderingSystem->Process(delta);
         window->display();
     }
-    //scriptManager->close();
+    scriptManager->close();
     std::cout << "Exit" << std::endl;
 }
 
@@ -94,6 +96,5 @@ void Engine::init(Configuration config) {
     collisionSystem = std::make_shared<CollisionSystem>();
     physicsSystem = std::make_shared<PhysicsSystem>();
 
-    EntityW::EventDispatcher::get().emitNow<StartedEvent>();
     initialized = true;
 }

@@ -39,8 +39,7 @@ namespace EntityW {
 
 	void Entity::attach(ComponentSp component)
 	{
-        printf("%d\n", component.get());
-		std::cout << "Attaching component " << component.get() << " " << component->getTypeId() << " to entity " << id << std::endl;
+		std::cout << "Attaching component " << component->getTypeId() << " to entity " << id << std::endl;
 
         components[component->getTypeId()] = component;
 		componentList.set(component->getTypeId());

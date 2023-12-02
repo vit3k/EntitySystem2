@@ -43,7 +43,7 @@ namespace EntityW {
 
 	typedef fastdelegate::FastDelegate1<EventSp> EventListenerDelegate;
 	typedef std::map<TypeId, std::vector<EventListenerDelegate>> EventListenersMap;
-    typedef void ( *native_engine_event_callback)(std::shared_ptr<EntityW::BaseEvent>);
+    typedef void ( *native_engine_event_callback)(std::shared_ptr<BaseEvent>);
 
 	class EventDispatcher
 	{
@@ -74,6 +74,8 @@ namespace EntityW {
 		template<class T, typename... Args>
 		void emitNow(Args... args) {
 			auto e = std::make_shared<T>(std::forward<Args>(args)...);
+
+            //printf("event pointer %lx %lx %d\n", e.get(), &e, sizeof(e));
 			if (listeners.find(e->getTypeId()) != listeners.end())
 			{
 				for (auto listener : listeners[e->getTypeId()])
@@ -99,7 +101,9 @@ namespace EntityW {
             {
                 for (auto listener : dotnetListeners[e->getTypeId()])
                 {
+                    //auto test = new EntityW::EntityCreatedEvent();
                     listener(e);
+                    nullptr;
                 }
             }
 		}

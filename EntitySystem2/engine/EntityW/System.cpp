@@ -15,6 +15,7 @@ namespace EntityW {
 		if (entity->hasComponents(components)) {
 			logger.log(getName() + ": entity added");
 			entities[entity->id] = entity;
+            EntityAddedCallback(entity);
 		}
 	}
 

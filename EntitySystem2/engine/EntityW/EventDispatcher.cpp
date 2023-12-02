@@ -43,6 +43,13 @@ namespace EntityW {
 						listener.second(listener.first, std::static_pointer_cast<LaunchBallEvent>(e));
 				}
 			}
+            if (dotnetListeners.find(e->getTypeId()) != dotnetListeners.end())
+            {
+                for (auto listener : dotnetListeners[e->getTypeId()])
+                {
+                    listener(e);
+                }
+            }
 		}
 
 		queues[currentQueue].clear();

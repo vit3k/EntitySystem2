@@ -25,6 +25,7 @@ namespace EntityW
 		virtual void OnEntityAdded(EventSp event);
 		virtual void OnComponentAttached(EventSp event);
 		virtual void OnEntityRemoved(EventSp event);
+        virtual void EntityAddedCallback(EntitySp entity) {};
 		//void setWorld(World* world) { this->world = world; }
 		ComponentList components;
 		BaseSystem(ComponentList components) : components(components), logger(Logger::get(getName()))

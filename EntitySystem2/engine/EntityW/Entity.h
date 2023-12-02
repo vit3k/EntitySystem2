@@ -66,6 +66,7 @@ namespace EntityW {
 		}
 
 		std::shared_ptr<Entity> commit() {
+            //printf("From native: %lx\n", thisPtr.get());
 			EventDispatcher::get().emitNow<EntityCreatedEvent>(thisPtr);
 			entities[id] = thisPtr;
 			commited = true;

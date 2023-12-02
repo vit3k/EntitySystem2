@@ -4,7 +4,12 @@
 #include "Configuration.h"
 #include "Engine.h"
 #include "Input.h"
+#include <map>
 
+void DotnetSystem::EntityAddedCallback(EntityW::EntitySp entity)
+{
+    entityAddedCallback(entity.get());
+}
 void* DotnetScriptManager::load_library(const char_t *path)
 {
     void *h = dlopen(path, RTLD_LAZY | RTLD_LOCAL);
@@ -106,30 +111,40 @@ void DotnetScriptManager::init()
     assert(rc == 0 && native_engine_init != nullptr && "Failure: load_assembly_and_get_function_pointer()");
 
     native_engine_init();
+
+    /*rc = load_assembly_and_get_function_pointer(
+            dotnetlib_path.c_str(),
+            "engine.Engine, dotnet",
+            "Process",
+            //UNMANAGEDCALLERSONLY_METHOD,
+            STR("engine.Engine+ProcessDelegate, dotnet"),
+            nullptr,
+            (void**)&native_engine_process);
+    assert(rc == 0 && native_engine_process != nullptr && "Failure: load_assembly_and_get_function_pointer()");*/
 }
 
 void DotnetScriptManager::process(EntityW::Time deltaTime)
 {
-
+    engineDelegates.Process(deltaTime.asMicroseconds());
 }
 
 void DotnetScriptManager::close()
 {
-
+    for (const auto& [key, value] : systems) {
+        delete value;
+    }
 }
+
+EngineDelegates DotnetScriptManager::engineDelegates;
+std::unordered_map<std::string, EntityW::TypeId> DotnetScriptManager::dotnetComponentsMap;
+std::unordered_map<std::string, DotnetSystem*> DotnetScriptManager::systems;
 
 #define ENGINE_API extern "C" __attribute__((visibility("default")))
 
-ENGINE_API void init(Configuration config) {
+// Engine
+ENGINE_API void init(Configuration config, EngineDelegates engineDelegates) {
     Engine::getInstance()->init(config);
-}
-
-ENGINE_API void input_mapAction(const char* action, sf::Keyboard::Key key) {
-    Input::mapAction(action, key);
-}
-
-ENGINE_API bool input_isActionPressed(const char* action) {
-    return Input::isActionPressed(action);
+    DotnetScriptManager::engineDelegates = engineDelegates;
 }
 
 ENGINE_API void subscribe(EntityW::TypeId eventId, EntityW::native_engine_event_callback callback )
@@ -150,6 +165,46 @@ ENGINE_API ComponentTypeIds getComponentTypeIds()
     };
 }
 
+ENGINE_API EventTypeIds getEventTypeIds()
+{
+    return EventTypeIds {
+            EntityW::EventTypeId<StartedEvent>(),
+            EntityW::EventTypeId<EntityW::EntityCreatedEvent>(),
+            EntityW::EventTypeId<EntityW::EntityRemovedEvent>(),
+            EntityW::EventTypeId<EntityW::ComponentAttachedEvent>()
+    };
+}
+
+ENGINE_API EntityW::TypeId registerComponent(const char* name)
+{
+    if (!DotnetScriptManager::dotnetComponentsMap.count(name))
+    {
+        auto typeId = EntityW::ScriptComponentTypeId();
+        DotnetScriptManager::dotnetComponentsMap[name] = typeId;
+        printf("Registering dotnet component %s with id %d\n", name, typeId);
+        return typeId;
+    }
+
+    return DotnetScriptManager::dotnetComponentsMap[name];
+}
+
+ENGINE_API DotnetSystem* system_Create(const char* name, long componentsMask, native_engine_entity_added entityAddedCallback) {
+    EntityW::ComponentList componentList(componentsMask);
+
+    auto system = new DotnetSystem(name, componentList, entityAddedCallback);
+    DotnetScriptManager::systems[name] = system;
+    return system;
+}
+// Input
+ENGINE_API void input_mapAction(const char* action, sf::Keyboard::Key key) {
+    Input::mapAction(action, key);
+}
+
+ENGINE_API bool input_isActionPressed(const char* action) {
+    return Input::isActionPressed(action);
+}
+
+// Entity
 ENGINE_API EntityW::Entity* entity_Create()
 {
     auto entity = EntityW::Entity::create();
@@ -161,28 +216,14 @@ ENGINE_API int entity_GetId(EntityW::Entity* entity)
     return entity->id;
 }
 
-TransformComponent* transformComponent;
 ENGINE_API void entity_Attach(EntityW::Entity* entity, EntityW::BaseComponent* component)
 {
     entity->attach(EntityW::ComponentSp(component));
 }
 
-ENGINE_API TransformComponent* transformComponent_Create(Vector2 position)
-{
-    return new TransformComponent(position);
-}
-
 ENGINE_API EntityW::BaseComponent* entity_GetComponent(EntityW::Entity* entity, int componentId)
 {
-    printf("Get componentid %d\n", componentId);
     return entity->get(componentId).get();
-}
-
-ENGINE_API SpriteComponent* spriteComponent_Create(char* path)
-{
-    auto sprite = new SpriteComponent(path);
-    sprite->load();
-    return sprite;
 }
 
 ENGINE_API void entity_Commit(EntityW::Entity* entity)
@@ -194,3 +235,40 @@ ENGINE_API bool entity_Has(EntityW::Entity* entity, int componentId)
 {
     return entity->has(componentId);
 }
+
+// Component
+ENGINE_API void deleteComponent(EntityW::BaseComponent* component)
+{
+    delete component;
+}
+
+// TransformComponent
+ENGINE_API TransformComponent* transformComponent_Create(Vector2 position)
+{
+    return new TransformComponent(position);
+}
+
+// SpriteComponent
+ENGINE_API SpriteComponent* spriteComponent_Create(char* path)
+{
+    auto sprite = new SpriteComponent(path);
+    sprite->load();
+    return sprite;
+}
+
+// DotnetComponent
+class DotnetComponent : EntityW::BaseComponent
+{
+    EntityW::TypeId id;
+public:
+    DotnetComponent(EntityW::TypeId id): id(id) {}
+    EntityW::TypeId getTypeId() const override {
+        return id;
+    }
+};
+
+ENGINE_API DotnetComponent* dotnetComponent_Create(EntityW::TypeId id)
+{
+    return new DotnetComponent(id);
+}
+

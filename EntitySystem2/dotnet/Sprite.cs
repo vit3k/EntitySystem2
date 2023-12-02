@@ -15,11 +15,20 @@ class Game {
         Input.MapAction("Left", Key.A);
         Input.MapAction("Right", Key.D);
         
-        var player = Entity.Create(
+        EventDispatcher.Instance.OnStarted += () => Console.WriteLine("Game started");
+
+        Engine.Instance.AddSystem(new MovementSystem());
+        
+        var player = new Entity(
             new TransformComponent(new Vector2(-9.5f,4)),
             new SpriteComponent("assets/player2.png")
             {
                 Scale = new Vector2(.3f, .3f)
+            },
+            new InputComponent(),
+            new MovementComponent()
+            {
+                Speed = 15.0f
             }
         );
     }

@@ -10,7 +10,8 @@ namespace EntityW {
 	class BaseComponent
 	{
 	public:
-		virtual TypeId getTypeId() const = 0;
+		[[nodiscard]] virtual TypeId getTypeId() const = 0;
+        virtual ~BaseComponent() = default;
 	};
 
 	template <class T>
@@ -19,7 +20,7 @@ namespace EntityW {
 	template<typename T>
 	class Component : public BaseComponent {
 	public:
-		virtual TypeId getTypeId() const override {
+		[[nodiscard]] TypeId getTypeId() const override {
 			return ComponentTypeId<T>();
 		}
 	};
